@@ -1,3 +1,3 @@
 # Kalyan's CraftRoom
 
-Portfolio site (single self-contained index.html). Open index.html or deploy as static.
+Portfolio site. `index.html` is the room home; case studies live in `work/` (mayo, pmip, promove). Deploy as a static site.

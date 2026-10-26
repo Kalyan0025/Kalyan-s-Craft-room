@@ -1,0 +1,1816 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PMIP Operations Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: enterprise ops shell — fixed left rail, top status bar, dense data canvas. Dark-first by design (control-room / shift-work). */
+:root{
+  color-scheme: dark;
+  --bg:#0d1217; --rail:#0f161c; --surface:#141c23; --surface-2:#1a242d; --surface-3:#212e38;
+  --line:#24313b; --line-strong:#32424e;
+  --fg:#e6edf1; --fg-2:#b3c1cb; --muted:#7f909d;
+  --accent:#22c3c3; --accent-ink:#031819; --accent-soft:rgba(34,195,195,.13);
+  --crit:#ff5f6b; --crit-bg:rgba(255,95,107,.13);
+  --high:#ff9c47; --high-bg:rgba(255,156,71,.13);
+  --dev:#efc84b; --dev-bg:rgba(239,200,75,.12);
+  --ok:#45cf94; --ok-bg:rgba(69,207,148,.12);
+  --info:#6ea9ff; --info-bg:rgba(110,169,255,.12);
+  --font-ui:"Barlow","Segoe UI",system-ui,sans-serif;
+  --font-label:"Barlow Semi Condensed","Barlow","Arial Narrow",sans-serif;
+  --font-data:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:6px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:15px/1.45 var(--font-ui);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.num{font-family:var(--font-data);font-variant-numeric:tabular-nums}
+.lbl{font:600 11.5px/1.2 var(--font-label);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ico{width:16px;height:16px;flex:none}
+
+/* ---------- Shell ---------- */
+.app{display:grid;grid-template-columns:228px minmax(0,1fr);min-height:100%}
+.side{background:var(--rail);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:20px;padding-block:18px;position:sticky;top:0;height:100vh;height:100dvh}
+.brand{display:flex;align-items:center;gap:10px;padding:0 18px}
+.brand-mark{width:30px;height:30px;border-radius:5px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 13px/1 var(--font-label);letter-spacing:.04em}
+.brand b{display:block;font:700 16px/1.1 var(--font-ui);letter-spacing:.02em}
+.brand span{font-size:12px;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:2px;padding:0 10px}
+.nav .lbl{padding:6px 8px 6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:5px;color:var(--fg-2);text-decoration:none;font-weight:500;font-size:14.5px;border:1px solid transparent}
+.nav a:hover{background:var(--surface-2);color:var(--fg)}
+.nav a[aria-current="page"]{background:var(--accent-soft);color:var(--fg);border-color:rgba(34,195,195,.3)}
+.nav a[aria-current="page"] .ico{color:var(--accent)}
+.nav a[aria-disabled="true"]{opacity:.42;pointer-events:none}
+.nav .count{margin-left:auto;font:600 12px/1 var(--font-data);padding:3px 6px;border-radius:4px;background:var(--crit-bg);color:var(--crit)}
+.side-foot{margin-top:auto;padding:0 18px;font-size:11.5px;line-height:1.45;color:var(--muted)}
+.side-foot b{display:block;color:var(--fg-2);font-weight:600;margin-bottom:2px}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:12px 28px;border-bottom:1px solid var(--line);background:var(--rail);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.site{display:flex;align-items:center;gap:10px}
+.site-sel{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line-strong);border-radius:5px;background:var(--surface);font-weight:600;font-size:14px}
+.live{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--fg-2)}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--ok-bg)}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:13px;color:var(--fg-2)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--surface-3);display:grid;place-items:center;font:600 12px/1 var(--font-label);color:var(--fg)}
+
+.view{padding:24px 28px 40px;display:flex;flex-direction:column;gap:20px}
+.page-head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.page-head h1{margin:0;font:600 26px/1.15 var(--font-ui);letter-spacing:-.005em;text-wrap:balance}
+.page-head p{margin:4px 0 0;color:var(--fg-2);font-size:14px}
+.page-head .actions{margin-left:auto;display:flex;gap:8px}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:5px;border:1px solid var(--line-strong);background:var(--surface-2);font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;color:var(--fg)}
+.btn:hover{background:var(--surface-3)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:#3fd3d3}
+.btn-ghost{background:transparent}
+.btn-sm{padding:5px 10px;font-size:13px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.panel-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.panel-head h2{margin:0;font:600 16px/1.2 var(--font-ui)}
+.panel-head .meta{margin-left:auto;font-size:13px;color:var(--muted)}
+
+/* ---------- Severity system: color + icon + label, never color alone ---------- */
+.sev{--c:var(--muted);--cb:transparent;display:inline-flex;align-items:center;gap:6px;padding:4px 8px 4px 6px;border-radius:4px;background:var(--cb);color:var(--c);border:1px solid color-mix(in srgb,var(--c) 38%,transparent);font:600 12px/1 var(--font-label);letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
+.sev .ico{width:14px;height:14px}
+.sev-crit{--c:var(--crit);--cb:var(--crit-bg)}
+.sev-high{--c:var(--high);--cb:var(--high-bg)}
+.sev-dev{--c:var(--dev);--cb:var(--dev-bg)}
+.sev-ok{--c:var(--ok);--cb:var(--ok-bg)}
+.sev-info{--c:var(--info);--cb:var(--info-bg)}
+
+.conf{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--fg-2);white-space:nowrap}
+.conf-bar{width:46px;height:6px;border-radius:3px;background:var(--line-strong);overflow:hidden}
+.conf-bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.conf b{font:500 13px/1 var(--font-data);color:var(--fg)}
+
+.status{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--fg-2);white-space:nowrap}
+.status i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.status.new i{background:var(--accent)} .status.new{color:var(--fg)}
+.status.wo i{background:var(--info)}
+.status.ack i{background:var(--fg-2)}
+
+/* ---------- Overview ---------- */
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.kpi.k-done{--c:var(--ok)}
+.kpi{position:relative;padding:16px 18px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;gap:6px}
+.kpi::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--c,var(--line-strong))}
+.kpi-top{display:flex;align-items:center;gap:8px;color:var(--c,var(--fg-2))}
+.kpi-top .lbl{color:var(--fg-2)}
+.kpi-val{font:500 34px/1 var(--font-data);font-variant-numeric:tabular-nums;color:var(--fg)}
+.kpi-sub{font-size:13px;color:var(--muted)}
+.kpi.k-crit{--c:var(--crit)} .kpi.k-high{--c:var(--high)} .kpi.k-sched{--c:var(--info)}
+
+.grid-overview{display:flex;flex-direction:column;gap:16px}
+.grid-overview .rail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);align-items:start}
+.sched-list.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.sched-list.cols li:nth-last-child(2){border-bottom:0}
+.table-wrap{overflow-x:auto}
+table.queue{width:100%;min-width:1000px;border-collapse:collapse;font-size:14px}
+.queue th{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.queue td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.queue tr:last-child td{border-bottom:0}
+.queue td:first-child{box-shadow:inset 3px 0 0 var(--row,transparent);padding-left:16px}
+.queue tr.r-crit{--row:var(--crit)} .queue tr.r-high{--row:var(--high)}
+.queue tr.is-focus td{background:rgba(34,195,195,.06)}
+.queue tr.is-focus td:first-child{box-shadow:inset 3px 0 0 var(--high),inset 0 0 0 0 transparent}
+.asset b{display:block;font:500 14px/1.2 var(--font-data)}
+.asset span{font-size:12.5px;color:var(--muted)}
+.issue{color:var(--fg);font-weight:500}
+.window{font:500 13.5px/1.2 var(--font-data);white-space:nowrap}
+.window small{display:block;font:400 12px/1.3 var(--font-ui);color:var(--muted);margin-top:2px}
+.trend{display:flex;align-items:center;gap:10px;white-space:nowrap;font-size:12.5px;color:var(--muted)}
+.trend svg{width:84px;height:26px;flex:none}
+.action-txt{color:var(--fg-2);max-width:220px}
+.queue .sort{display:inline-flex;align-items:center;gap:4px;color:var(--fg-2)}
+
+.rail{display:flex;flex-direction:column;gap:16px}
+.sched-list{list-style:none;margin:0;padding:6px 0}
+.sched-list li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;padding:10px 18px;border-bottom:1px solid var(--line)}
+.sched-list li:last-child{border-bottom:0}
+.sched-when{grid-row:span 2;width:52px;text-align:center;padding:6px 0;border-radius:5px;background:var(--surface-2);font:600 11px/1.15 var(--font-label);letter-spacing:.06em;text-transform:uppercase;color:var(--fg-2)}
+.sched-when b{display:block;font:500 14px/1.2 var(--font-data);color:var(--fg);letter-spacing:0;text-transform:none}
+.sched-list .a{font:500 13.5px/1.2 var(--font-data)}
+.sched-list .t{font-size:13px;color:var(--muted)}
+.panel-foot{padding:10px 18px;border-top:1px solid var(--line);font-size:13px;color:var(--fg-2)}
+.mix{padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.mix-bar{display:flex;height:10px;border-radius:3px;overflow:hidden;gap:2px}
+.mix-bar i{display:block;height:100%}
+.mix-legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:13px;color:var(--fg-2)}
+.mix-legend span{display:flex;align-items:center;gap:7px}
+.mix-legend i{width:9px;height:9px;border-radius:2px}
+.mix-legend b{margin-left:auto;font:500 13px/1 var(--font-data);color:var(--fg)}
+
+/* ---------- Alert detail ---------- */
+.crumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.crumb a{color:var(--fg-2);text-decoration:none}
+.crumb a:hover{color:var(--fg);text-decoration:underline}
+.alert-title{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.alert-title h1{margin:0;font:600 26px/1.15 var(--font-ui)}
+.alert-title .id{font-family:var(--font-data);font-weight:500}
+.alert-meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px;color:var(--fg-2)}
+.alert-meta span{display:flex;align-items:center;gap:6px}
+
+.depth{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.depth button{all:unset;cursor:pointer;display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-right:1px solid var(--line);position:relative}
+.depth button:last-child{border-right:0}
+.depth button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.depth .n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font:600 12px/1 var(--font-data);border:1px solid var(--line-strong);color:var(--muted);flex:none}
+.depth b{display:block;font-size:14px;font-weight:600;color:var(--fg-2)}
+.depth small{display:block;font-size:12.5px;color:var(--muted)}
+.depth button.on .n{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.depth button.on b{color:var(--fg)}
+.depth button.cur::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--accent)}
+
+.alert-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.levels{display:flex;flex-direction:column;gap:16px;min-width:0}
+.level{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.level-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.level-head .tag{font:600 11px/1 var(--font-label);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);padding:4px 7px;border-radius:4px;background:var(--accent-soft)}
+.level-head h2{margin:0;font:600 16px/1.2 var(--font-ui)}
+.level-head .q{margin-left:auto;font-size:13px;color:var(--muted);font-style:italic}
+.level-body{padding:18px}
+.level-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 18px;border-top:1px solid var(--line);background:var(--surface-2);border-radius:0 0 var(--r) var(--r)}
+.level-foot .hint{font-size:13px;color:var(--muted)}
+
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 18px}
+.summary .f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.summary .f .v{font-size:15px;font-weight:600}
+.summary .f .v.num{font-weight:500}
+.rec{grid-column:1/-1;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 14px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line)}
+.rec .ico{color:var(--accent);width:18px;height:18px}
+.rec b{font-size:15px}
+.rec .when{font:500 13px/1 var(--font-data);color:var(--high);padding:4px 7px;border-radius:4px;background:var(--high-bg)}
+
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.stat{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.stat .v{font:500 22px/1 var(--font-data);font-variant-numeric:tabular-nums}
+.stat .v small{font-size:13px;color:var(--muted);margin-left:3px}
+.stat.hot .v{color:var(--high)}
+.chart-box{margin-top:16px}
+.chart-legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--fg-2);margin-bottom:6px}
+.chart-legend span{display:flex;align-items:center;gap:7px}
+.chart-legend i{display:inline-block;width:14px;height:8px;border-radius:2px}
+svg.chart{display:block;width:100%;height:auto}
+.chart text{font:11px var(--font-data);fill:var(--muted)}
+.chart .ann{font:600 11px var(--font-label);letter-spacing:.06em;fill:var(--high)}
+.chart .lim{font:500 11px var(--font-data);fill:var(--fg-2)}
+.chart .end{font:600 12px var(--font-data);fill:var(--fg)}
+.chart .tip{font:500 11.5px var(--font-data);fill:var(--fg)}
+svg.chart{touch-action:pan-y}
+.sensors{margin-top:16px;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:5px}
+.sensor{display:grid;grid-template-columns:minmax(0,1.3fr) auto minmax(0,1fr) 110px;align-items:center;gap:14px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.sensor:last-child{border-bottom:0}
+.sensor .nm{font-weight:600;font-size:14px}
+.sensor .nm small{display:block;font-weight:400;font-size:12.5px;color:var(--muted)}
+.sensor .rd{font:500 14px/1.2 var(--font-data);text-align:right}
+.sensor .rd small{display:block;font:400 12px/1.3 var(--font-data);color:var(--muted)}
+.sensor svg{width:110px;height:28px}
+
+.confbig{padding:16px;border:1px solid var(--line);border-radius:5px;background:var(--surface-2);display:flex;flex-direction:column;gap:10px}
+.confbig .v{font:500 44px/1 var(--font-data)}
+.confbig .v small{font-size:20px;color:var(--fg-2)}
+.confbig .track{height:8px;border-radius:4px;background:var(--surface-3);overflow:hidden}
+.confbig .track i{display:block;height:100%;width:87%;background:var(--accent)}
+.confbig p{margin:0;font-size:13px;color:var(--fg-2)}
+.reason-col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.block-title{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
+.block-title h3{margin:0;font:600 14.5px/1.2 var(--font-ui)}
+.block-title span{font-size:12.5px;color:var(--muted)}
+.infl{display:flex;flex-direction:column;gap:8px}
+.infl-row{display:grid;grid-template-columns:150px 120px auto;align-items:center;gap:14px;font-size:14px}
+.meter{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.meter i{height:8px;border-radius:2px;background:var(--surface-3)}
+.meter.m3 i{background:var(--accent)}
+.meter.m2 i:nth-child(-n+2){background:var(--accent)}
+.meter.m1 i:nth-child(1){background:var(--accent)}
+.infl-row .lv{font:600 12px/1 var(--font-label);letter-spacing:.07em;text-transform:uppercase;color:var(--fg-2)}
+.prec{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.dots{display:grid;grid-template-columns:repeat(14,12px);gap:5px}
+.dots i{width:12px;height:12px;border-radius:2px;background:var(--high)}
+.dots i.no{background:transparent;border:1.5px solid var(--line-strong)}
+.prec-txt{font-size:14px;color:var(--fg-2);max-width:280px}
+.prec-txt b{font-family:var(--font-data);font-weight:500;color:var(--fg)}
+.owner-note{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:5px;border:1px dashed var(--line-strong);font-size:13px;color:var(--fg-2)}
+.owner-note .ico{color:var(--muted);margin-top:1px}
+
+.facts{list-style:none;margin:0;padding:6px 18px 12px}
+.facts li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.facts li:last-child{border-bottom:0}
+.facts li span{color:var(--muted)}
+.facts li b{font-weight:500;text-align:right}
+.decide{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.decide p{margin:0;font-size:13.5px;color:var(--fg-2)}
+.decide .row{display:flex;flex-direction:column;gap:8px}
+.decide .row .btn{justify-content:center}
+.authority{display:flex;align-items:center;gap:8px;font:600 11.5px/1 var(--font-label);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.authority b{color:var(--fg-2);font-weight:600}
+.authority i{flex:1;height:1px;background:var(--line-strong)}
+
+/* ---------- Shared additions ---------- */
+.btn[disabled]{opacity:.42;cursor:not-allowed}
+.btn[disabled]:hover{background:var(--surface-2)}
+.btn-primary[disabled]:hover{background:var(--accent)}
+.gate{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--dev)}
+.gate .ico{width:14px;height:14px;margin-top:1px}
+.sensor .health{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:12px;color:var(--muted)}
+.sensor .health i{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel-body{padding:16px 18px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);font-size:13px;color:var(--fg-2)}
+.chip.acc{background:var(--accent-soft);border-color:rgba(34,195,195,.35);color:var(--fg)}
+.ok-txt{color:var(--ok)} .hi-txt{color:var(--high)}
+
+/* Health timeline */
+.events{list-style:none;margin:0;padding:6px 18px 14px;position:relative}
+.events li{display:grid;grid-template-columns:96px 18px minmax(0,1fr);gap:12px;padding:10px 0;position:relative}
+.events li::before{content:"";position:absolute;left:113px;top:0;bottom:0;width:2px;background:var(--line-strong)}
+.events li:first-child::before{top:18px} .events li:last-child::before{bottom:calc(100% - 18px)}
+.events .when{font:600 12px/1.5 var(--font-label);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding-top:1px}
+.events .dot{width:12px;height:12px;border-radius:50%;margin:4px 0 0 3px;background:var(--surface);border:2px solid var(--c,var(--ok));position:relative;z-index:1}
+.events .what b{display:block;font-size:14.5px;font-weight:600}
+.events .what span{font-size:13px;color:var(--fg-2)}
+.events li.e-pred .dot{background:var(--high)}
+.qa{list-style:none;margin:0;padding:4px 18px 14px}
+.qa li{padding:11px 0;border-bottom:1px solid var(--line)}
+.qa li:last-child{border-bottom:0}
+.qa .q{font-size:13px;color:var(--muted);margin-bottom:3px}
+.qa .a{font-size:14px}
+
+/* Decision */
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid var(--line-strong);border-radius:var(--r);background:var(--surface-2);cursor:pointer}
+.choice:hover{border-color:var(--fg-2)}
+.choice:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.choice:has(input:disabled){opacity:.45;cursor:not-allowed}
+.opt input{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--line-strong);margin:2px 0 0;flex:none;background:var(--surface);cursor:inherit}
+.choice input:checked,.opt input:checked{border:5px solid var(--accent)}
+.choice b{display:block;font-size:15px;margin-bottom:2px}
+.choice span{font-size:13px;color:var(--fg-2)}
+.reviewed{display:flex;flex-wrap:wrap;gap:8px}
+.reviewed .chip .ico{width:14px;height:14px}
+.reviewed .chip.done .ico{color:var(--ok)}
+.reviewed .chip.miss{color:var(--muted);border-style:dashed}
+.reasons{display:flex;flex-wrap:wrap;gap:8px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field textarea,.field select,.field input[type=text]{font:inherit;font-size:14px;color:var(--fg);background:var(--surface-2);border:1px solid var(--line-strong);border-radius:5px;padding:9px 11px;width:100%}
+.field textarea{min-height:76px;resize:vertical}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:5px;cursor:pointer;background:var(--surface-2)}
+.opt:has(input:checked){border-color:var(--accent)}
+.opt b{display:block;font-size:14px}
+.opt span{font-size:12.5px;color:var(--muted)}
+.steps{display:flex;flex-direction:column;gap:0;counter-reset:s}
+.steps li{list-style:none;display:flex;gap:12px;align-items:center;padding:9px 0;font-size:14px;color:var(--fg-2)}
+.steps li i{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:600 11px/1 var(--font-data);border:1px solid var(--line-strong);font-style:normal}
+.steps li.done{color:var(--fg)} .steps li.done i{background:var(--ok);border-color:var(--ok);color:var(--accent-ink)}
+.steps li.cur{color:var(--fg)} .steps li.cur i{border-color:var(--accent);color:var(--accent)}
+.flow{display:flex;flex-direction:column;gap:6px;padding:14px 18px}
+.flow div{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:5px;font-size:13.5px;border:1px solid var(--line)}
+.flow div small{margin-left:auto;font:600 10.5px/1 var(--font-label);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.flow .ai{background:var(--surface-2)}
+.flow .hu{background:var(--accent-soft);border-color:rgba(34,195,195,.3)}
+.flow .line{height:1px;border:0;padding:0;background:var(--line-strong);margin:4px 0;position:relative}
+.logged{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:var(--r);border:1px solid rgba(69,207,148,.4);background:var(--ok-bg)}
+.logged .ico{color:var(--ok);width:20px;height:20px}
+.logged b{display:block;margin-bottom:3px}
+.logged span{font-size:13.5px;color:var(--fg-2)}
+
+/* Maintenance */
+.carry{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:11px 14px;border-radius:var(--r);background:var(--accent-soft);border:1px solid rgba(34,195,195,.3);font-size:13.5px}
+.carry .ico{color:var(--accent)}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 18px}
+.form-grid .full{grid-column:1/-1}
+.prefill{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);font-size:14px}
+.prefill .num{white-space:nowrap}
+.prefill small{white-space:nowrap;margin-left:auto;font:600 10.5px/1 var(--font-label);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:5px;overflow:hidden}
+.seg label{padding:8px 14px;font-size:13.5px;cursor:pointer;border-right:1px solid var(--line-strong);color:var(--fg-2)}
+.seg label:last-child{border-right:0}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){background:var(--high-bg);color:var(--high);font-weight:600}
+.seg label:has(#p-crit:checked){background:var(--crit-bg);color:var(--crit)}
+.seg label:has(#p-med:checked){background:var(--dev-bg);color:var(--dev)}
+.seg label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
+.checks{display:flex;flex-direction:column;gap:8px}
+.check{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer}
+.check input{width:16px;height:16px;accent-color:var(--accent)}
+.wo{list-style:none;margin:0;padding:6px 18px 4px}
+.wo li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.wo li:last-child{border-bottom:0}
+.wo li span{color:var(--muted)} .wo li b{font-weight:500;text-align:right}
+
+/* Resolution */
+.loop{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border-top:1px solid var(--line)}
+.loop div{padding:14px 14px 16px;border-right:1px solid var(--line);position:relative;display:flex;flex-direction:column;gap:5px}
+.loop div:last-child{border-right:0}
+.loop div::before{content:"";height:3px;background:var(--ok);position:absolute;left:0;right:0;top:-1px}
+.loop .lbl{color:var(--muted)}
+.loop b{font-size:14.5px}
+.loop span{font-size:12.5px;color:var(--fg-2)}
+table.log{width:100%;min-width:820px;border-collapse:collapse;font-size:14px}
+.log th{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
+.log td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+.log tr:last-child td{border-bottom:0}
+.log td small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+
+/* Before / after */
+.compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.frame{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);display:flex;flex-direction:column;min-width:0}
+.frame-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.frame-head .tag{font:600 11px/1 var(--font-label);letter-spacing:.08em;text-transform:uppercase;padding:4px 7px;border-radius:4px}
+.tag-before{background:var(--crit-bg);color:var(--crit)} .tag-after{background:var(--ok-bg);color:var(--ok)}
+.frame-head h3{margin:0;font-size:15px}
+.frame-body{padding:14px;flex:1}
+.frame-foot{padding:12px 16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--fg-2);background:var(--surface-2);border-radius:0 0 var(--r) var(--r)}
+.frame-foot b{color:var(--fg)}
+.dense{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-size:11px;line-height:1.3;color:var(--fg-2)}
+.dense .d{border:1px solid var(--line);border-radius:3px;padding:6px;background:var(--surface-2);min-width:0}
+.dense .d.wide{grid-column:1/-1}
+.dense .d b{display:block;font:600 10px/1.2 var(--font-label);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.dense svg{width:100%;height:30px;display:block}
+.dense table{width:100%;border-collapse:collapse;font-size:11px}
+.dense td{padding:1px 3px;border-bottom:1px solid var(--line);white-space:nowrap}
+.mini-levels{display:flex;flex-direction:column;gap:8px}
+.ml{border:1px solid var(--line);border-radius:5px;background:var(--surface-2)}
+.ml-h{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:13.5px;font-weight:600}
+.ml-h .tag{font:600 10px/1 var(--font-label);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);padding:3px 6px;border-radius:3px;background:var(--accent-soft)}
+.ml-h small{margin-left:auto;font-weight:400;color:var(--muted);font-size:12.5px}
+.ml-b{padding:4px 12px 12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-size:13px}
+.ml-b .lbl{display:block;margin-bottom:2px}
+.feed{list-style:none;margin:0;padding:0;font-size:13px}
+.feed li{display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line);align-items:center}
+.feed li:last-child{border-bottom:0}
+.feed .t{font:500 12px/1 var(--font-data);color:var(--muted)}
+
+/* Edge states */
+.states{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.state-cap{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.state-cap b{font-size:15px}
+.state-cap span{font-size:13px;color:var(--muted)}
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:28px 18px}
+.empty .ico{width:28px;height:28px;color:var(--ok)}
+.empty b{font-size:15px}
+.empty span{font-size:13.5px;color:var(--fg-2);max-width:320px}
+.skel{border-radius:4px;background:linear-gradient(90deg,var(--surface-2),var(--surface-3),var(--surface-2));background-size:200% 100%;animation:sk 1.4s linear infinite}
+@keyframes sk{from{background-position:200% 0}to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}
+.warnline{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:5px;background:var(--dev-bg);border:1px solid rgba(239,200,75,.35);font-size:13px;color:var(--fg)}
+.warnline .ico{color:var(--dev);margin-top:1px}
+
+@media (max-width:1180px){ .split{grid-template-columns:minmax(0,1fr)} .loop{grid-template-columns:repeat(3,minmax(0,1fr))} .loop div:nth-child(3){border-right:0} .loop div:nth-child(-n+3){border-bottom:1px solid var(--line)} }
+@media (max-width:860px){
+  .choices,.form-grid,.compare,.states,.ml-b{grid-template-columns:minmax(0,1fr)}
+  .loop{grid-template-columns:minmax(0,1fr)} .loop div{border-right:0;border-bottom:1px solid var(--line)}
+  .events li{grid-template-columns:72px 18px minmax(0,1fr)} .events li::before{left:89px}
+}
+
+.chart .wk{font:600 10.5px var(--font-label);letter-spacing:.08em;fill:var(--muted)}
+.chart .mk{font:600 11px var(--font-label);letter-spacing:.06em;fill:var(--ok)}
+/* ================= v4: wireframe-faithful layouts ================= */
+.top-crumb{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--fg-2)}
+.top-crumb b{color:var(--fg);font-weight:700;letter-spacing:.03em}
+.top-crumb i{font-style:normal;color:var(--muted)}
+.site{flex-wrap:wrap}
+.kpi-link{text-decoration:none;color:inherit}
+.kpi-link:hover{border-color:var(--line-strong);background:var(--surface-2)}
+.kpi-link .kpi-sub{display:flex;align-items:center;gap:4px}
+
+/* Hero: critical attention card */
+.sect-label{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sect-label .note{font-size:13px;color:var(--muted)}
+.hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px 28px;align-items:center;padding:20px 24px 20px 28px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--high)}
+.hero-main{display:flex;flex-direction:column;gap:12px;min-width:0}
+.hero-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hero-top .asset-id{font:500 24px/1.1 var(--font-data)}
+.hero-issue{font:600 19px/1.25 var(--font-ui)}
+.hero-facts{display:flex;flex-wrap:wrap;gap:10px 40px}
+.hero-facts .f{display:flex;flex-direction:column;gap:5px}
+.hero-facts .v{font-size:15.5px;font-weight:600}
+.hero-cta{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+
+/* Table header with filters */
+.panel-head.ph-filters{flex-wrap:wrap}
+.panel-head.ph-filters .meta{margin-left:0;font-size:13px;color:var(--muted)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.fchip{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:5px;border:1px solid var(--line-strong);background:var(--surface-2);font:600 12.5px/1 var(--font-label);letter-spacing:.06em;text-transform:uppercase;color:var(--fg-2);cursor:pointer}
+.fchip .ico{width:13px;height:13px}
+.fchip .n{font:500 12px/1 var(--font-data);color:var(--muted);letter-spacing:0}
+.fchip:hover{background:var(--surface-3)}
+.fchip[aria-pressed="true"]{background:var(--accent-soft);border-color:rgba(34,195,195,.45);color:var(--fg)}
+.queue tr.r-dev{--row:var(--dev)}
+.queue .none td{padding:26px 16px;text-align:center;color:var(--muted)}
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.sched-list.one li:last-child{border-bottom:0}
+.wlegend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:0 18px 14px;font-size:12.5px;color:var(--fg-2)}
+.wlegend span{display:flex;align-items:center;gap:7px}
+.wlegend i{width:9px;height:9px;border-radius:2px}
+
+/* Segmented buttons, chart header */
+.seg button{all:unset;box-sizing:border-box;padding:6px 12px;font-size:13px;cursor:pointer;border-right:1px solid var(--line-strong);color:var(--fg-2)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--fg);font-weight:600}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.chart-top{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap;margin-bottom:8px}
+.chart-top .chart-legend{margin:0}
+.caption{margin:10px 0 0;font-size:14px;color:var(--fg-2)}
+.lbl-sec{margin:18px 0 8px}
+
+/* Level 3 (renamed so it cannot collide with form controls) */
+.reasoning{display:grid;grid-template-columns:240px minmax(0,1fr);gap:22px;align-items:start}
+.confbig .pred-line{display:flex;flex-direction:column;gap:4px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.confbig .pred-line b{font-size:16px}
+.bars{display:flex;flex-direction:column;gap:11px}
+.bar-row{display:grid;grid-template-columns:110px minmax(0,1fr) 78px;gap:14px;align-items:center;font-size:14px}
+.bar{height:10px;border-radius:3px;background:var(--surface-3);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.bar-row .lv{font:600 12px/1 var(--font-label);letter-spacing:.07em;text-transform:uppercase;color:var(--fg-2)}
+
+/* Equipment health (detail-page template) */
+.status-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.traj{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+.traj>div+div{border-left:1px solid var(--line)}
+.traj .qa{padding-top:8px}
+.subhead{padding:14px 18px 0;display:block}
+.tabs{display:flex;gap:2px;padding:0 12px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{all:unset;box-sizing:border-box;cursor:pointer;padding:13px 14px;font-size:14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button:hover{color:var(--fg)}
+.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.mh{list-style:none;margin:0;padding:4px 18px 10px}
+.mh li{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}
+.mh li:last-child{border-bottom:0}
+.mh .w{font:500 13px/1 var(--font-data);color:var(--muted)}
+.mh small{color:var(--muted);font-size:13px}
+
+/* Decision */
+.rec-head{display:flex;align-items:center;gap:12px 14px;flex-wrap:wrap;padding:16px 18px;border-bottom:1px solid var(--line)}
+.rec-head .asset-id{font:500 21px/1.1 var(--font-data)}
+.rec-head .issue-t{font-size:16px;font-weight:600;color:var(--fg-2)}
+.kv{list-style:none;margin:0;padding:4px 18px}
+.kv li{display:grid;grid-template-columns:170px minmax(0,1fr);gap:14px;padding:13px 0;border-bottom:1px solid var(--line);align-items:center}
+.kv li:last-child{border-bottom:0}
+.kv li>span:first-child{font:600 11.5px/1.2 var(--font-label);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kv li b{font-size:15.5px;font-weight:600}
+.reviewed{display:flex;flex-wrap:wrap;gap:8px}
+.cta-wrap{display:flex;flex-direction:column;gap:6px;padding:8px 18px 18px}
+.btn-lg{padding:15px 20px;font-size:15px;letter-spacing:.05em;text-transform:uppercase;justify-content:center;font-weight:700}
+.btn-link{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;padding:10px;color:var(--fg-2);font-weight:600;font-size:14.5px;text-decoration:underline;text-underline-offset:4px}
+.btn-link:hover,.btn-link[aria-pressed="true"]{color:var(--fg)}
+.btn-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.42;cursor:not-allowed}
+.branch{display:flex;flex-direction:column;gap:16px;padding:18px;border-top:1px solid var(--line);background:var(--surface-2);border-radius:0 0 var(--r) var(--r)}
+.opts .opt b{font-weight:500}
+
+/* Forms */
+.field input[type=date],.field input[type=time],.field input[type=text]{font:inherit;font-size:14px;color:var(--fg);background:var(--surface-2);border:1px solid var(--line-strong);border-radius:5px;padding:9px 11px;width:100%;min-width:0}
+.field input[type=text].locked{color:var(--fg)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.hint{font-size:12.5px;color:var(--muted)}
+.carry.warn{background:var(--dev-bg);border-color:rgba(239,200,75,.4)}
+.carry.warn .ico{color:var(--dev)}
+
+/* Schedule */
+.sched-table{width:100%;min-width:860px;border-collapse:collapse;font-size:14px}
+.sched-table th{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+.sched-table td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+.sched-table tr:last-child td{border-bottom:0}
+.sched-table tr.new td{background:rgba(34,195,195,.07)}
+.sched-table .when{font:500 13.5px/1.2 var(--font-data);white-space:nowrap}
+.trg{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--fg-2);white-space:nowrap}
+.trg.ai{color:var(--accent)}
+
+/* Compare */
+.oldalert{display:flex;flex-direction:column;gap:6px;padding:16px;border:1px solid var(--line-strong);border-radius:5px;background:var(--surface-2);max-width:380px}
+.oldalert .a{font:700 12px/1 var(--font-label);letter-spacing:.14em;color:var(--muted)}
+.oldalert b{font:500 18px/1.2 var(--font-data)}
+.oldalert span.t{font-size:15px}
+.qmap{list-style:none;margin:0;padding:4px 18px 10px}
+.qmap li{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);align-items:center;font-size:14.5px}
+.qmap li:last-child{border-bottom:0}
+.qmap .where{color:var(--fg-2);font-size:13.5px}
+.qmap a{color:var(--accent);text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}
+.qmap a:hover{text-decoration:underline}
+.compare.single{grid-template-columns:minmax(0,1fr)}
+.group-label{margin-top:6px}
+
+@media (max-width:1180px){
+  .trio{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .reasoning{grid-template-columns:minmax(0,1fr)}
+  .traj{grid-template-columns:minmax(0,1fr)}
+  .traj>div+div{border-left:0;border-top:1px solid var(--line)}
+}
+@media (max-width:860px){
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .hero-cta{align-items:flex-start}
+  .kv li{grid-template-columns:minmax(0,1fr)}
+  .qmap li{grid-template-columns:minmax(0,1fr)}
+  .two{grid-template-columns:minmax(0,1fr)}
+  .bar-row{grid-template-columns:96px minmax(0,1fr) 70px}
+  .filters{margin-left:0}
+}
+
+.nav a[aria-disabled="true"]{opacity:.42;pointer-events:none}
+.queue th,.queue td{padding-left:9px;padding-right:9px}
+.queue td:first-child,.queue th:first-child{padding-left:14px}
+.queue .trend svg{width:64px}
+.queue td.action-txt{max-width:170px}
+table.queue{min-width:0}
+.mix-note{margin:0;padding:0 18px 16px;font-size:13px;color:var(--muted)}
+.prec{flex-wrap:nowrap;align-items:center}
+.prec .dots{flex:none}
+.prec-txt{max-width:none;flex:1 1 auto;margin:0;line-height:1.5}
+.carry>span{flex:1 1 280px;min-width:0}
+.sched-table td.asset small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.btn-lg[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--fg)}
+@media (max-width:860px){.prec{flex-wrap:wrap}}
+[hidden]{display:none!important}
+.reveal{animation:rise .22s ease-out}
+@keyframes rise{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.reveal{animation:none}}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1180px){
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid-overview,.alert-grid{grid-template-columns:minmax(0,1fr)}
+  .rail,.grid-overview .rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;height:auto;flex-direction:row;align-items:center;gap:12px;padding:10px 16px;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .brand{padding:0}
+  .brand span,.side-foot,.nav .lbl{display:none}
+  .nav{flex-direction:row;padding:0}
+  .nav a{white-space:nowrap;padding:7px 10px}
+  .top{padding:10px 16px;position:static}
+  .view{padding:18px 16px 32px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi.k-done{grid-column:1/-1}
+  .sched-list.cols{grid-template-columns:minmax(0,1fr)}
+  .sched-list.cols li:nth-last-child(2){border-bottom:1px solid var(--line)}
+  .summary,.stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .depth{grid-template-columns:minmax(0,1fr)}
+  .depth button{border-right:0;border-bottom:1px solid var(--line)}
+  .sensor{grid-template-columns:minmax(0,1fr) auto}
+  .sensor svg,.sensor .sev{display:none}
+  .infl-row{grid-template-columns:110px 1fr auto}
+  .level-head .q{display:none}
+}
+</style>
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-crit" viewBox="0 0 16 16"><path d="M5.3 1.6h5.4l3.7 3.7v5.4l-3.7 3.7H5.3l-3.7-3.7V5.3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 4.7v4M8 11.2v.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-high" viewBox="0 0 16 16"><path d="M8 1.8 14.8 13.8H1.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6.2v3.4M8 11.6v.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-dev" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.8 10.2 7.1 7.9l1.7 1.6 2.5-2.7M9.3 6.6h2.1v2.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m5.2 8.2 1.9 1.9 3.8-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="9" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 16 16"><path d="M4 11V7.2a4 4 0 0 1 8 0V11l1.2 1.5H2.8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6.6 14h2.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 16 16"><path d="M1.5 8.5h3l1.8-4 3 8 1.9-4h3.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 16 16"><path d="M10.6 2.2a3.4 3.4 0 0 0-3.9 4.5L2.3 11.1a1.4 1.4 0 0 0 2 2l4.4-4.4a3.4 3.4 0 0 0 4.5-3.9l-2 2-1.8-.4-.4-1.8z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+  <symbol id="i-hist" viewBox="0 0 16 16"><path d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.3 2.5v2.4h2.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 5v3.2l2.1 1.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-back" viewBox="0 0 16 16"><path d="M13 8H3M7 4 3 8l4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-tool" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5V8l2.4 1.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.2v4M8 4.8v.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 16 16"><path d="M2.5 13.5h11M4.5 11V8M8 11V4M11.5 11V6.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-cog" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2M3.6 3.6l1.4 1.4M11 11l1.4 1.4M12.4 3.6 11 5M5 11l-1.4 1.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="brand-mark">PM</div>
+      <div><b>PMIP</b><span>Predictive Maintenance</span></div>
+    </div>
+    <nav class="nav" aria-label="Primary">
+      <div class="lbl">Operations</div>
+      <a href="#overview" data-nav="overview"><svg class="ico"><use href="#i-grid"/></svg>Dashboard</a>
+      <a href="#health" data-nav="health"><svg class="ico"><use href="#i-cog"/></svg>Equipment</a>
+      <a href="#alert" data-nav="alert"><svg class="ico"><use href="#i-bell"/></svg>Alerts<span class="count num">9</span></a>
+      <a href="#schedule" data-nav="schedule"><svg class="ico"><use href="#i-wrench"/></svg>Maintenance</a>
+      <a href="#analytics" data-nav="analytics" aria-disabled="true" tabindex="-1"><svg class="ico"><use href="#i-chart"/></svg>Analytics</a>
+      <div class="lbl" style="margin-top:14px">Case study</div>
+      <a href="#compare" data-nav="compare"><svg class="ico"><use href="#i-grid"/></svg>Before / after</a>
+      <a href="#states" data-nav="states"><svg class="ico"><use href="#i-info"/></svg>Edge states</a>
+    </nav>
+    <div class="side-foot"><b>Portfolio reconstruction</b>PMIP · Siemens, 2022–2024. Rebuilt from project documentation. Asset data is illustrative except the documented figures.</div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="site">
+        <span class="top-crumb"><b>EnergyOS</b><i>/</i><span>Predictive Maintenance</span></span>
+        <span class="site-sel">Plant North · Hall 3 <svg class="ico" style="width:14px;height:14px;color:var(--muted)"><use href="#i-down"/></svg></span>
+        <span class="live"><i></i>24 assets streaming · synced <span class="num">14:20:05</span></span>
+      </div>
+      <div class="top-right">
+        <span>Shift B · Energy Management</span>
+        <span class="avatar" aria-label="Signed in as operator">OP</span>
+      </div>
+    </header>
+
+    <!-- ================= SCREEN 1 · OPERATIONAL OVERVIEW ================= -->
+    <section class="view" id="view-overview" aria-labelledby="ov-h">
+      <div class="page-head">
+        <div>
+          <h1 id="ov-h">Operational overview</h1>
+          <p>What needs my attention right now? Ranked by severity and time to predicted failure, not by when the alert arrived.</p>
+        </div>
+        <div class="actions"><button class="btn btn-ghost btn-sm" type="button">Export shift report</button></div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-top"><svg class="ico"><use href="#i-pulse"/></svg><span class="lbl">Assets</span></div><div class="kpi-val">24</div><div class="kpi-sub">All sensors reporting</div></div>
+        <div class="kpi k-crit"><div class="kpi-top"><svg class="ico"><use href="#i-crit"/></svg><span class="lbl">Critical</span></div><div class="kpi-val">3</div><div class="kpi-sub">Shortest window 18 h</div></div>
+        <div class="kpi k-high"><div class="kpi-top"><svg class="ico"><use href="#i-high"/></svg><span class="lbl">High risk</span></div><div class="kpi-val">6</div><div class="kpi-sub">1 new since shift start</div></div>
+        <div class="kpi k-sched"><div class="kpi-top"><svg class="ico"><use href="#i-cal"/></svg><span class="lbl">Scheduled</span></div><div class="kpi-val">8</div><div class="kpi-sub">Next today at 16:00</div></div>
+        <a class="kpi k-done kpi-link" href="#history"><div class="kpi-top"><svg class="ico"><use href="#i-ok"/></svg><span class="lbl">Completed</span></div><div class="kpi-val">5</div><div class="kpi-sub">Last 7 days · view outcomes <svg class="ico" style="width:12px;height:12px"><use href="#i-arrow"/></svg></div></a>
+      </div>
+
+      <div class="sect-label"><span class="lbl" style="color:var(--fg-2)">Attention required</span><span class="note">3 critical assets are already acknowledged or have open work orders.</span></div>
+      <article class="hero" aria-label="Highest-priority prediction awaiting a decision">
+        <div class="hero-main">
+          <div class="hero-top">
+            <span class="asset-id">Motor M-204</span>
+            <span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High risk</span>
+            <span class="status new"><i></i>New · awaiting your decision</span>
+          </div>
+          <div class="hero-issue">Bearing degradation</div>
+          <div class="hero-facts">
+            <div class="f"><span class="lbl">Estimated failure</span><span class="v num">72 hours</span></div>
+            <div class="f"><span class="lbl">Recommended action</span><span class="v">Inspect bearing assembly</span></div>
+            <div class="f"><span class="lbl">Model confidence</span><span class="conf"><span class="conf-bar"><i style="width:87%"></i></span><b>87%</b></span></div>
+          </div>
+        </div>
+        <div class="hero-cta"><a class="btn btn-primary" href="#evidence">View evidence <svg class="ico"><use href="#i-arrow"/></svg></a></div>
+      </article>
+
+      <div class="panel">
+        <div class="panel-head ph-filters">
+          <h2>Equipment health</h2>
+          <span class="meta" id="q-meta"></span>
+          <div class="filters" role="group" aria-label="Filter by severity">
+            <button class="fchip" type="button" data-sev="crit" aria-pressed="true"><svg class="ico" style="color:var(--crit)"><use href="#i-crit"/></svg>Critical <span class="n">3</span></button>
+            <button class="fchip" type="button" data-sev="high" aria-pressed="true"><svg class="ico" style="color:var(--high)"><use href="#i-high"/></svg>High risk <span class="n">6</span></button>
+            <button class="fchip" type="button" data-sev="dev" aria-pressed="false"><svg class="ico" style="color:var(--dev)"><use href="#i-dev"/></svg>Developing <span class="n">4</span></button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="queue">
+            <thead><tr>
+              <th class="lbl">Severity</th><th class="lbl">Asset</th><th class="lbl">Predicted failure</th>
+              <th class="lbl"><span class="sort">Failure window <svg class="ico" style="width:12px;height:12px"><use href="#i-down"/></svg></span></th>
+              <th class="lbl">Signal trend</th><th class="lbl">Confidence</th><th class="lbl">Recommended action</th><th class="lbl">Status</th>
+            </tr></thead>
+            <tbody id="queue-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="trio">
+        <div class="panel">
+          <div class="panel-head"><h2>Fleet condition</h2><span class="meta num">24 assets</span></div>
+          <div class="mix">
+            <div class="mix-bar" role="img" aria-label="3 critical, 6 high risk, 4 developing, 11 healthy">
+              <i style="flex:3;background:var(--crit)"></i><i style="flex:6;background:var(--high)"></i><i style="flex:4;background:var(--dev)"></i><i style="flex:11;background:var(--ok)"></i>
+            </div>
+            <div class="mix-legend">
+              <span><i style="background:var(--crit)"></i>Critical<b>3</b></span>
+              <span><i style="background:var(--high)"></i>High risk<b>6</b></span>
+              <span><i style="background:var(--dev)"></i>Developing<b>4</b></span>
+              <span><i style="background:var(--ok)"></i>Healthy<b>11</b></span>
+            </div>
+          </div>
+          <p class="mix-note">Developing assets are tracked but don't raise alerts yet. Healthy assets show no deviation from their normal ranges.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Predicted failures by window</h2></div>
+          <div class="panel-body" style="padding-bottom:6px"><svg class="chart" id="win-chart" viewBox="0 0 360 190" role="img" aria-label="Assets by predicted failure window: 1 critical within 24 hours, 2 critical and 1 high risk within 3 days, 2 high risk within 7 days, 3 high risk within 14 days, 4 developing beyond 14 days."></svg></div>
+          <div class="wlegend"><span><i style="background:var(--crit)"></i>Critical</span><span><i style="background:var(--high)"></i>High risk</span><span><i style="background:var(--dev)"></i>Developing</span></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Scheduled maintenance</h2><span class="meta num">8</span></div>
+          <ul class="sched-list one" id="dash-sched"></ul>
+          <div class="panel-foot"><a href="#schedule" style="color:var(--accent);text-decoration:none;font-weight:600">View all 8 scheduled →</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SCREEN 2 · PREDICTIVE ALERT ================= -->
+    <section class="view" id="view-alert" aria-labelledby="al-h" hidden>
+      <div class="crumb"><a href="#overview"><svg class="ico" style="width:14px;height:14px;vertical-align:-2px"><use href="#i-back"/></svg> Dashboard</a><span>/</span><span>Alerts</span><span>/</span><span class="num">M-204</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="alert-title">
+          <h1 id="al-h"><span class="id">Motor M-204</span> · Bearing degradation</h1>
+          <span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High risk</span>
+        </div>
+        <div class="alert-meta">
+          <span><svg class="ico" style="color:var(--muted)"><use href="#i-tool"/></svg>Estimated failure within <b class="num">72 h</b></span>
+          <span>Conveyor drive · Line 3</span>
+          <span>Prediction updated <span class="num">14:02</span></span>
+        </div>
+      </div>
+
+      <div class="depth" role="group" aria-label="Investigation depth">
+        <button type="button" data-level="1"><span class="n">1</span><span><b>Alert summary</b><small>Do I need to care?</small></span></button>
+        <button type="button" data-level="2"><span class="n">2</span><span><b>Evidence</b><small>What is physically happening?</small></span></button>
+        <button type="button" data-level="3"><span class="n">3</span><span><b>AI reasoning</b><small>Why does the model believe this?</small></span></button>
+      </div>
+
+      <div class="alert-grid">
+        <div class="levels">
+          <article class="level" id="lv1">
+            <div class="level-head"><span class="tag">Level 1</span><h2>Alert summary</h2><span class="q">Do I need to care?</span></div>
+            <div class="level-body">
+              <div class="summary">
+                <div class="f"><span class="lbl">Equipment</span><span class="v num">Motor M-204</span></div>
+                <div class="f"><span class="lbl">Predicted failure</span><span class="v">Bearing degradation</span></div>
+                <div class="f"><span class="lbl">Severity</span><span><span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High risk</span></span></div>
+                <div class="f"><span class="lbl">Estimated failure</span><span class="v num">Within 72 hours</span></div>
+                <div class="rec">
+                  <svg class="ico"><use href="#i-wrench"/></svg>
+                  <div><span class="lbl">Recommended action</span><br><b>Inspect bearing assembly</b></div>
+                  <span class="when">within 24 h</span>
+                  <span class="conf" style="margin-left:auto"><span class="conf-bar"><i style="width:87%"></i></span><b>87%</b> model confidence</span>
+                </div>
+              </div>
+            </div>
+            <div class="level-foot" id="lv1-foot">
+              <button class="btn btn-primary" type="button" data-level="2">View evidence <svg class="ico"><use href="#i-down"/></svg></button>
+              <span class="hint">Enough to prioritize. Open the evidence before deciding.</span>
+            </div>
+          </article>
+
+          <article class="level" id="lv2" hidden>
+            <div class="level-head"><span class="tag">Level 2</span><h2>Evidence</h2><span class="q">What is physically happening to the equipment?</span></div>
+            <div class="level-body">
+              <div class="lbl" style="margin-bottom:8px">Vibration</div>
+              <div class="stats">
+                <div class="stat hot"><span class="lbl">Current reading</span><span class="v">12.4<small>mm/s</small></span></div>
+                <div class="stat"><span class="lbl">Normal operating range</span><span class="v">2–8<small>mm/s</small></span></div>
+                <div class="stat hot"><span class="lbl">Deviation</span><span class="v">+55%</span></div>
+                <div class="stat hot"><span class="lbl">Duration</span><span class="v">72<small>hours</small></span></div>
+              </div>
+              <div class="chart-box">
+                <div class="chart-top">
+                  <div class="chart-legend">
+                    <span><i style="background:var(--ok-bg);border:1px solid rgba(69,207,148,.45)"></i>Normal operating range</span>
+                    <span><i style="background:var(--fg)"></i>Vibration, RMS velocity</span>
+                    <span><i style="background:var(--high-bg);border:1px solid rgba(255,156,71,.45)"></i>Persistent anomaly</span>
+                  </div>
+                  <div class="seg" role="group" aria-label="Time range"><button type="button" data-range="3" aria-pressed="true">3 days</button><button type="button" data-range="14" aria-pressed="false">14 days</button></div>
+                </div>
+                <svg class="chart" id="vib-chart" viewBox="0 0 760 260" role="img" aria-label="Bearing vibration. Above the 8 mm/s normal upper range for the last 72 hours, rising to 12.4 mm/s."></svg>
+                <p class="caption">Persistent vibration above expected range.</p>
+              </div>
+              <div class="lbl lbl-sec">All signals</div>
+              <div class="sensors" style="margin-top:0">
+                <div class="sensor">
+                  <div class="nm">Vibration<small>Drive-end accelerometer</small><span class="health"><i></i>Calibrated 18 d ago · live</span></div>
+                  <span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>Above range</span>
+                  <svg data-spark="m204" data-c="var(--high)" viewBox="0 0 110 28" aria-hidden="true"></svg>
+                  <div class="rd">12.4 mm/s<small>range 2–8</small></div>
+                </div>
+                <div class="sensor">
+                  <div class="nm">Temperature<small>Drive-end RTD</small><span class="health"><i></i>Calibrated 18 d ago · live</span></div>
+                  <span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>Above range</span>
+                  <svg data-spark="late" data-c="var(--high)" viewBox="0 0 110 28" aria-hidden="true"></svg>
+                  <div class="rd">72 °C<small>range 40–70</small></div>
+                </div>
+                <div class="sensor">
+                  <div class="nm">Pressure<small>Lube oil, bearing housing</small><span class="health"><i></i>Calibrated 18 d ago · live</span></div>
+                  <span class="sev sev-ok"><svg class="ico"><use href="#i-ok"/></svg>In range</span>
+                  <svg data-spark="flat" data-c="var(--ok)" viewBox="0 0 110 28" aria-hidden="true"></svg>
+                  <div class="rd">2.6 bar<small>range 2.0–3.5</small></div>
+                </div>
+              </div>
+            </div>
+            <div class="level-foot" id="lv2-foot">
+              <button class="btn btn-primary" type="button" data-level="3">View AI reasoning <svg class="ico"><use href="#i-down"/></svg></button>
+              <span class="hint">Vibration has stayed outside its normal range for three days.</span>
+            </div>
+          </article>
+
+          <article class="level" id="lv3" hidden>
+            <div class="level-head"><span class="tag">Level 3</span><h2>AI reasoning</h2><span class="q">Why did the model reach this conclusion?</span></div>
+            <div class="level-body">
+              <div class="reasoning">
+                <div class="confbig">
+                  <div class="pred-line"><span class="lbl">Prediction</span><b>Bearing degradation</b></div>
+                  <span class="lbl">Model confidence</span>
+                  <span class="v">87<small>%</small></span>
+                  <div class="track"><i></i></div>
+                  <p>The model's estimate that this pattern ends in bearing failure inside the window. Read it alongside the history on the right.</p>
+                </div>
+                <div class="reason-col">
+                  <div>
+                    <div class="block-title"><h3>Influential signals</h3><span>contribution to this prediction</span></div>
+                    <div class="bars">
+                      <div class="bar-row"><span>Vibration</span><span class="bar"><i style="width:100%"></i></span><span class="lv">High</span></div>
+                      <div class="bar-row"><span>Temperature</span><span class="bar"><i style="width:62%"></i></span><span class="lv">Medium</span></div>
+                      <div class="bar-row"><span>Pressure</span><span class="bar"><i style="width:25%"></i></span><span class="lv">Low</span></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="block-title"><h3>Historical precedent</h3><span>similar signal patterns</span></div>
+                    <div class="prec">
+                      <div class="dots" id="prec-dots" role="img" aria-label="24 of 28 similar patterns ended in bearing failure within 96 hours"></div>
+                      <p class="prec-txt"><b>28</b> similar patterns observed.<br><b>24</b> resulted in bearing failure within <b>96&nbsp;hours</b>.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="owner-note" style="margin-top:18px"><svg class="ico"><use href="#i-info"/></svg><span>Confidence and signal influence come from the predictive model. They explain the recommendation. The decision stays with the engineer.</span></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="rail">
+          <div class="panel">
+            <div class="panel-head"><h2>Your decision</h2></div>
+            <div class="decide">
+              <div class="authority"><b>Model recommends</b><i></i><b>You decide</b></div>
+              <p>Inspect bearing assembly within 24 h.</p>
+              <div class="row">
+                <button class="btn btn-primary" type="button" id="rail-agree" disabled>Agree</button>
+                <button class="btn" type="button" id="rail-disagree">Disagree / defer</button>
+              </div>
+              <div class="gate" id="rail-gate"><svg class="ico"><use href="#i-info"/></svg><span>Open the evidence to enable Agree.</span></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Asset</h2><span class="meta num">M-204</span></div>
+            <ul class="facts">
+              <li><span>Type</span><b>Induction motor</b></li>
+              <li><span>Function</span><b>Conveyor drive</b></li>
+              <li><span>Location</span><b>Hall 3 · Line 3</b></li>
+              <li><span>Last maintenance</span><b>Lubrication · 41 d ago</b></li>
+              <li><span>Sensors</span><b>Vibration, temp, pressure</b></li>
+            </ul>
+            <div class="panel-foot"><a href="#health" class="btn btn-ghost btn-sm">Equipment health <svg class="ico"><use href="#i-arrow"/></svg></a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SCREEN 3 · EQUIPMENT HEALTH ================= -->
+    <section class="view" id="view-health" aria-labelledby="he-h" hidden>
+      <div class="crumb"><a href="#overview"><svg class="ico" style="width:14px;height:14px;vertical-align:-2px"><use href="#i-back"/></svg> Dashboard</a><span>/</span><span>Equipment</span><span>/</span><span>Line 3</span><span>/</span><span class="num">M-204</span></div>
+      <div class="page-head">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <h1 id="he-h"><span class="num" style="font-weight:500">Motor M-204</span> — Equipment health</h1>
+          <div class="status-row">
+            <span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High risk</span>
+            <span class="status new"><i></i>Prediction active</span>
+            <span style="font-size:13.5px;color:var(--fg-2)">Conveyor drive · Hall 3 · Line 3</span>
+          </div>
+        </div>
+        <div class="actions"><a class="btn btn-primary btn-sm" href="#decision">Go to decision <svg class="ico"><use href="#i-arrow"/></svg></a></div>
+      </div>
+      <div class="split">
+        <div class="stack">
+          <div class="panel">
+            <div class="panel-head"><h2>Health trajectory</h2><span class="meta">How did we get here?</span></div>
+            <div class="traj">
+              <ol class="events">
+                <li style="--c:var(--ok)"><span class="when">Week 1</span><span class="dot"></span><div class="what"><b>Normal operation</b><span>Vibration near 4.2 mm/s. Temperature near 57 °C.</span></div></li>
+                <li style="--c:var(--dev)"><span class="when">Week 2</span><span class="dot"></span><div class="what"><b>Minor vibration deviation</b><span>Baseline drifts up by about 0.4 mm/s, still inside the normal range.</span></div></li>
+                <li style="--c:var(--high)"><span class="when">Week 3</span><span class="dot"></span><div class="what"><b>Repeated threshold violations</b><span>Three short spikes above 8 mm/s, each back in range within hours.</span></div></li>
+                <li style="--c:var(--high)"><span class="when">Week 4</span><span class="dot"></span><div class="what"><b>Temperature begins increasing</b><span>Climbs about 2 °C a day while vibration keeps rising.</span></div></li>
+                <li style="--c:var(--high)"><span class="when">Current</span><span class="dot"></span><div class="what"><b>Persistent vibration + temperature anomaly</b><span>Vibration above range for 72 h at 12.4 mm/s. Temperature 72 °C.</span></div></li>
+                <li class="e-pred" style="--c:var(--high)"><span class="when">Prediction</span><span class="dot"></span><div class="what"><b>Bearing degradation — High risk</b><span>87% confidence. Estimated failure within 72 h.</span></div></li>
+              </ol>
+              <div>
+                <span class="lbl subhead">Reading the pattern</span>
+                <ul class="qa">
+                  <li><div class="q">Sudden or gradual?</div><div class="a">Gradual. The deviation builds over three weeks.</div></li>
+                  <li><div class="q">Did anything change after the last maintenance?</div><div class="a">Lubrication was 41 days ago. Readings stayed normal for about two weeks after it.</div></li>
+                  <li><div class="q">Are multiple signals changing together?</div><div class="a">Yes. Temperature starts climbing shortly after the last vibration spike.</div></li>
+                  <li><div class="q">Does this match what you know about this equipment?</div><div class="a">That's your call. Record it in the decision.</div></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="tabs" role="tablist" aria-label="Equipment detail">
+              <button type="button" role="tab" id="tab-sensor" aria-controls="tp-sensor" aria-selected="true">Sensor trends</button>
+              <button type="button" role="tab" id="tab-maint" aria-controls="tp-maint" aria-selected="false" tabindex="-1">Maintenance history</button>
+              <button type="button" role="tab" id="tab-ai" aria-controls="tp-ai" aria-selected="false" tabindex="-1">AI evidence</button>
+            </div>
+            <div role="tabpanel" id="tp-sensor" aria-labelledby="tab-sensor" class="panel-body">
+              <div class="chart-legend"><span><i style="background:var(--fg)"></i>Vibration, mm/s</span><span><i style="background:var(--ok-bg);border:1px solid rgba(69,207,148,.45)"></i>Normal operating range</span></div>
+              <svg class="chart" id="health-vib" viewBox="0 0 760 210" role="img" aria-label="Vibration over 28 days: normal in week 1, slight drift in week 2, three brief spikes above 8 mm/s in week 3, rising in week 4, above range for the last 72 hours."></svg>
+              <div class="chart-legend" style="margin-top:14px"><span><i style="background:var(--dev)"></i>Temperature, °C</span><span><i style="background:var(--ok-bg);border:1px solid rgba(69,207,148,.45)"></i>Normal operating range</span></div>
+              <svg class="chart" id="health-temp" viewBox="0 0 760 170" role="img" aria-label="Temperature over 28 days: steady near 57 °C for three weeks, rising from day 7, above the 70 °C limit in the last day at 72 °C."></svg>
+            </div>
+            <div role="tabpanel" id="tp-maint" aria-labelledby="tab-maint" hidden>
+              <ul class="mh">
+                <li><span class="w">41 d ago</span><b>Lubrication</b><small>Routine</small></li>
+                <li><span class="w">5 mo ago</span><b>Alignment check</b><small>Within tolerance</small></li>
+                <li><span class="w">11 mo ago</span><b>Bearing inspection</b><small>No wear found</small></li>
+              </ul>
+            </div>
+            <div role="tabpanel" id="tp-ai" aria-labelledby="tab-ai" hidden class="panel-body">
+              <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+                <div class="stat"><span class="lbl">Model confidence</span><span class="v">87<small>%</small></span></div>
+                <div class="stat"><span class="lbl">Top signal</span><span class="v" style="font-size:17px">Vibration<small>High</small></span></div>
+                <div class="stat"><span class="lbl">Precedent</span><span class="v">24<small>of 28 failed in 96 h</small></span></div>
+              </div>
+              <p class="caption">Temperature contributed at medium weight and pressure at low weight.</p>
+              <div style="margin-top:14px"><a class="btn btn-sm" href="#alert" data-open-level="3">Open full AI reasoning <svg class="ico"><use href="#i-arrow"/></svg></a></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rail">
+          <div class="panel">
+            <div class="panel-head"><h2>Status</h2></div>
+            <ul class="facts">
+              <li><span>Prediction</span><b>Bearing degradation</b></li>
+              <li><span>Risk</span><b class="hi-txt">High</b></li>
+              <li><span>Failure window</span><b class="num">Within 72 h</b></li>
+              <li><span>Confidence</span><b class="num">87%</b></li>
+              <li><span>Updated</span><b class="num">14:02</b></li>
+            </ul>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Details</h2></div>
+            <ul class="facts">
+              <li><span>Type</span><b>Induction motor</b></li>
+              <li><span>Function</span><b>Conveyor drive</b></li>
+              <li><span>Location</span><b>Hall 3 · Line 3</b></li>
+              <li><span>Last maintenance</span><b>Lubrication · 41 d ago</b></li>
+            </ul>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Actions</h2></div>
+            <div class="decide">
+              <a class="btn btn-primary" href="#decision" style="justify-content:center">Go to decision</a>
+              <a class="btn" href="#evidence" style="justify-content:center">Review the alert</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SCREEN 4 · HUMAN-IN-THE-LOOP DECISION ================= -->
+    <section class="view" id="view-decision" aria-labelledby="de-h" hidden>
+      <div class="crumb"><a href="#alert"><svg class="ico" style="width:14px;height:14px;vertical-align:-2px"><use href="#i-back"/></svg> Alert</a><span>/</span><span class="num">M-204</span><span>/</span><span>Decision</span></div>
+      <div class="page-head"><div><h1 id="de-h">Do you agree with this recommendation?</h1><p>The model recommends. You decide. Either answer is logged with the evidence you reviewed.</p></div></div>
+      <div class="split">
+        <div class="stack">
+          <div class="panel">
+            <div class="panel-head"><h2>Recommended action</h2></div>
+            <div class="rec-head">
+              <span class="asset-id">Motor M-204</span>
+              <span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High risk</span>
+              <span class="issue-t">Bearing degradation</span>
+            </div>
+            <ul class="kv">
+              <li><span>Recommendation</span><b>Inspect bearing assembly within 24 hours</b></li>
+              <li><span>Evidence</span><b>Persistent vibration + temperature anomaly</b></li>
+              <li><span>AI confidence</span><span class="conf"><span class="conf-bar" style="width:120px"><i style="width:87%"></i></span><b>87%</b></span></li>
+              <li><span>You reviewed</span><span class="reviewed" id="reviewed"></span></li>
+            </ul>
+            <form id="decide-form">
+              <div class="cta-wrap">
+                <button class="btn btn-primary btn-lg" type="button" id="dec-agree" aria-pressed="false" disabled>Agree with recommendation</button>
+                <div class="gate" id="agree-gate" hidden><svg class="ico"><use href="#i-info"/></svg><span>Agree unlocks after you open the evidence. <a href="#evidence" style="color:inherit">Open the evidence</a></span></div>
+                <button class="btn-link" type="button" id="dec-disagree" aria-pressed="false">Disagree / defer</button>
+              </div>
+
+              <div class="branch" id="agree-panel" hidden>
+                <ol class="steps" style="margin:0;padding:0">
+                  <li class="done"><i>✓</i>Review recommendation</li>
+                  <li class="cur"><i>2</i>Schedule maintenance</li>
+                  <li><i>3</i>Confirm action</li>
+                </ol>
+                <div><a class="btn btn-primary" href="#maintenance">Continue to scheduling <svg class="ico"><use href="#i-arrow"/></svg></a></div>
+              </div>
+
+              <div class="branch" id="disagree-panel" hidden>
+                <div class="field">
+                  <span class="lbl">Provide reason <span style="color:var(--crit)">· required</span></span>
+                  <div class="opts" role="radiogroup" aria-label="Reason">
+                    <label class="opt"><input type="radio" name="reason" value="Recently inspected"><b>Recently inspected</b></label>
+                    <label class="opt"><input type="radio" name="reason" value="Suspected sensor calibration issue"><b>Suspected sensor calibration issue</b></label>
+                    <label class="opt"><input type="radio" name="reason" value="Known operating condition"><b>Known operating condition</b></label>
+                    <label class="opt"><input type="radio" name="reason" value="Additional investigation required"><b>Additional investigation required</b></label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="lbl" for="dec-note">Note for the reliability team <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
+                  <textarea id="dec-note" placeholder="What do you know about this machine that the model doesn't?"></textarea>
+                </div>
+                <div class="field">
+                  <span class="lbl">Next step</span>
+                  <div class="opts" role="radiogroup" aria-label="Next step">
+                    <label class="opt"><input type="radio" name="next" value="monitor" id="n1" checked><span><b>Continue monitoring</b><span>M-204 stays in the queue. You're alerted if it gets worse.</span></span></label>
+                    <label class="opt"><input type="radio" name="next" value="escalate" id="n2"><span><b>Escalate</b><span>Send to the reliability engineer on call with your note.</span></span></label>
+                  </div>
+                </div>
+                <div><button class="btn btn-primary" type="submit" id="log-btn" disabled>Log decision</button></div>
+              </div>
+            </form>
+            <div class="branch" id="logged" hidden></div>
+          </div>
+        </div>
+        <div class="rail">
+          <div class="panel">
+            <div class="panel-head"><h2>Who does what</h2></div>
+            <div class="flow">
+              <div class="ai">Detects the anomaly<small>Model</small></div>
+              <div class="ai">Explains evidence and confidence<small>Model</small></div>
+              <div class="line"></div>
+              <div class="hu">Evaluates the evidence<small>You</small></div>
+              <div class="hu">Decides and acts<small>You</small></div>
+            </div>
+            <div class="panel-foot">Nothing is scheduled or dismissed automatically.</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Where your answer goes</h2></div>
+            <ul class="qa">
+              <li><div class="q">Agree</div><div class="a">Opens a maintenance action with this context filled in.</div></li>
+              <li><div class="q">Disagree / defer</div><div class="a">Your reason is shared with the product and ML teams. Repeated disagreement on one prediction type is a signal they review.</div></li>
+              <li><div class="q">Either way</div><div class="a">Logged with time, role and the evidence levels you opened.</div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SCREEN 5 · MAINTENANCE ACTION ================= -->
+    <section class="view" id="view-maintenance" aria-labelledby="ma-h" hidden>
+      <div class="crumb"><a href="#decision"><svg class="ico" style="width:14px;height:14px;vertical-align:-2px"><use href="#i-back"/></svg> Decision</a><span>/</span><span>Maintenance</span><span>/</span><span>New action</span></div>
+      <div class="page-head"><div><h1 id="ma-h">Create maintenance action</h1><p>What should happen next. Everything the system already knows is filled in.</p></div></div>
+      <div class="carry" id="carry"></div>
+      <div class="split">
+        <form class="panel" id="maint-form">
+          <div class="panel-head"><h2>Maintenance action</h2></div>
+          <div class="panel-body form-grid">
+            <div class="field"><span class="lbl">Asset</span><div class="prefill"><span class="num">Motor M-204</span><small>From alert</small></div></div>
+            <div class="field"><span class="lbl">Issue</span><div class="prefill">Bearing degradation<small>From alert</small></div></div>
+            <div class="field"><span class="lbl">Priority</span>
+              <div class="seg" role="radiogroup" aria-label="Priority">
+                <label><input type="radio" name="prio" id="p-crit" value="Critical">Critical</label>
+                <label><input type="radio" name="prio" id="p-high" value="High" checked>High</label>
+                <label><input type="radio" name="prio" id="p-med" value="Medium">Medium</label>
+              </div>
+            </div>
+            <div class="field"><span class="lbl">Recommended timeframe</span><div class="prefill"><span class="num">Within 24 hours</span><small>From model</small></div></div>
+            <div class="field full"><span class="lbl">Recommended action</span><div class="prefill">Inspect bearing assembly<small>From model</small></div></div>
+            <div class="field"><label class="lbl" for="m-team">Assigned team</label>
+              <select id="m-team"><option>Maintenance team</option><option>Mechanical crew A</option><option>Mechanical crew B</option><option>Reliability engineer on call</option></select>
+            </div>
+            <div class="field"><span class="lbl">Schedule</span>
+              <div class="two"><input type="date" id="m-date" aria-label="Date"><input type="time" id="m-time" aria-label="Time"></div>
+              <span class="hint">Next planned line stop: tomorrow 06:00.</span>
+            </div>
+            <div class="field full"><span class="lbl">Attach to the action</span>
+              <div class="checks">
+                <label class="check"><input type="checkbox" id="at1" name="att" checked>Sensor evidence snapshot (vibration, temperature, pressure)</label>
+                <label class="check"><input type="checkbox" id="at2" name="att" checked>AI reasoning and 87% confidence</label>
+                <label class="check"><input type="checkbox" id="at3" name="att" checked>Decision record</label>
+              </div>
+            </div>
+          </div>
+          <div class="panel-foot" style="display:flex;justify-content:flex-end;gap:10px;align-items:center;flex-wrap:wrap">
+            <span class="hint" id="create-hint"></span>
+            <button class="btn btn-primary" type="submit" id="create-wo">Create maintenance action</button>
+          </div>
+        </form>
+        <div class="rail">
+          <div class="panel">
+            <div class="panel-head"><h2>Preview</h2><span class="meta num">WO-48213</span></div>
+            <ul class="wo">
+              <li><span>Asset</span><b class="num">M-204</b></li>
+              <li><span>Issue</span><b>Bearing degradation</b></li>
+              <li><span>Priority</span><b class="hi-txt" id="wo-prio">High</b></li>
+              <li><span>Scheduled</span><b id="wo-slot">—</b></li>
+              <li><span>Assigned</span><b id="wo-crew">Maintenance team</b></li>
+              <li><span>Attachments</span><b id="wo-att">3</b></li>
+            </ul>
+            <div class="panel-body" style="padding-top:8px"><div class="gate" id="wo-warn" hidden><svg class="ico"><use href="#i-info"/></svg><span id="wo-warn-t"></span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= MAINTENANCE SCHEDULE ================= -->
+    <section class="view" id="view-schedule" aria-labelledby="sc-h" hidden>
+      <div class="page-head">
+        <div><h1 id="sc-h">Maintenance schedule</h1><p>Predicted work is raised from AI recommendations after an engineer agrees. Planned work follows fixed intervals.</p></div>
+        <div class="actions"><a class="btn btn-ghost btn-sm" href="#history">View outcomes</a></div>
+      </div>
+      <div class="carry" id="sched-new" hidden><svg class="ico"><use href="#i-ok"/></svg><span id="sched-new-t"></span></div>
+      <div class="panel">
+        <div class="panel-head"><h2>Scheduled</h2><span class="meta num" id="sched-count">8</span></div>
+        <div class="table-wrap"><table class="sched-table">
+          <thead><tr><th class="lbl">Asset</th><th class="lbl">Task</th><th class="lbl">Trigger</th><th class="lbl">Priority</th><th class="lbl">When</th><th class="lbl">Assigned</th></tr></thead>
+          <tbody id="sched-body"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ================= SCREEN 6 · RESOLUTION ================= -->
+    <section class="view" id="view-history" aria-labelledby="hi-h" hidden>
+      <div class="crumb"><a href="#schedule"><svg class="ico" style="width:14px;height:14px;vertical-align:-2px"><use href="#i-back"/></svg> Maintenance</a><span>/</span><span class="num">M-204</span><span>/</span><span>Resolution</span></div>
+      <div class="page-head">
+        <div><h1 id="hi-h"><span class="num" style="font-weight:500">Motor M-204</span> — Resolution</h1><p>What actually happened after the prediction, and what it taught the model.</p></div>
+      </div>
+      <div class="carry" id="wo-created" hidden><svg class="ico"><use href="#i-ok"/></svg><span id="wo-created-t"></span></div>
+      <div class="panel">
+        <div class="panel-head"><h2>Closed loop</h2><span class="sev sev-ok" style="margin-left:auto"><svg class="ico"><use href="#i-ok"/></svg>Resolved</span></div>
+        <div class="loop">
+          <div><span class="lbl">Prediction</span><b>Bearing degradation</b><span>87% · Day 0, 14:02</span></div>
+          <div><span class="lbl">Operator decision</span><b class="ok-txt">✓ Agreed</b><span>Senior maintenance engineer · 14:09</span></div>
+          <div><span class="lbl">Maintenance</span><b class="ok-txt">✓ Completed</b><span class="num">WO-48213 · Day 1, 06:00–08:10</span></div>
+          <div><span class="lbl">Finding</span><b>Bearing degradation confirmed</b><span>Wear found on inspection</span></div>
+          <div><span class="lbl">Action</span><b>Bearing replaced</b><span>Drive-end bearing</span></div>
+          <div><span class="lbl">Current asset status</span><b class="ok-txt">Monitoring</b><span>Vibration back to 2.9 mm/s</span></div>
+        </div>
+      </div>
+      <div class="split">
+        <div class="panel">
+          <div class="panel-head"><h2>Vibration before and after repair</h2><span class="meta">Day −2 to Day +3</span></div>
+          <div class="panel-body"><svg class="chart" id="post-chart" viewBox="0 0 760 210" role="img" aria-label="Vibration above 12 mm/s before the repair on day 1, dropping to about 2.9 mm/s after the bearing replacement and staying in range."></svg></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Model feedback</h2></div>
+          <ul class="qa">
+            <li><div class="q">Outcome recorded</div><div class="a ok-txt">Prediction confirmed by inspection</div></li>
+            <li><div class="q">Lead time gained</div><div class="a">Repaired at a planned stop, before failure</div></li>
+            <li><div class="q">Shared with</div><div class="a">Product and ML teams, with the decision record</div></li>
+          </ul>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Recent resolutions</h2><span class="meta">Other assets · last 30 days</span></div>
+        <div class="table-wrap"><table class="log">
+          <thead><tr><th class="lbl">Asset</th><th class="lbl">Prediction</th><th class="lbl">Operator decision</th><th class="lbl">Outcome</th><th class="lbl">Feedback to ML team</th></tr></thead>
+          <tbody>
+            <tr><td class="num">C-055</td><td>Impeller wear<small>83%</small></td><td><span class="status new"><i></i>Agreed</span></td><td>Confirmed · impeller replaced</td><td><span class="ok-txt">Prediction confirmed</span></td></tr>
+            <tr><td class="num">HX-040</td><td>Tube fouling<small>79%</small></td><td><span class="status new"><i></i>Agreed</span></td><td>Confirmed · tubes cleaned</td><td><span class="ok-txt">Prediction confirmed</span></td></tr>
+            <tr><td class="num">P-110</td><td>Mechanical seal wear<small>81%</small></td><td><span class="status"><i style="background:var(--dev)"></i>Disagreed</span><small>Recently inspected</small></td><td>No failure after 14 d</td><td><span class="hi-txt">Flagged for review</span><small>3rd disagreement on seal predictions</small></td></tr>
+            <tr><td class="num">F-12</td><td>Rotor imbalance<small>72%</small></td><td><span class="status"><i style="background:var(--dev)"></i>Deferred</span><small>Known operating condition</small></td><td>Monitoring · within range</td><td>Pending outcome</td></tr>
+            <tr><td class="num">TX-03</td><td>Cooling fan failure<small>69%</small></td><td><span class="status"><i style="background:var(--dev)"></i>Disagreed</span><small>Suspected sensor calibration issue</small></td><td>Sensor recalibrated · no fault</td><td><span class="hi-txt">Flagged for review</span><small>Sensor data quality</small></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ================= OLD vs NEW ================= -->
+    <section class="view" id="view-compare" aria-labelledby="co-h" hidden>
+      <div class="page-head"><div><h1 id="co-h">Old UI → new UI</h1><p>The old experience was system-centered: here is what the model predicted. The new one is decision-centered.</p></div></div>
+
+      <div class="lbl group-label" style="color:var(--fg-2)">1 · The trust problem: a conclusion without reasoning</div>
+      <div class="compare">
+        <div class="frame">
+          <div class="frame-head"><span class="tag tag-before">Before</span><h3>Prediction only</h3></div>
+          <div class="frame-body">
+            <div class="oldalert"><span class="a">ALERT</span><b>Motor M-204</b><span class="t">Bearing failure predicted</span><span><span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High risk</span></span></div>
+          </div>
+          <div class="frame-foot"><b>Technically a prediction.</b> For the engineer it is where the investigation starts, not where it ends.</div>
+        </div>
+        <div class="frame">
+          <div class="frame-head"><span class="tag tag-after">After</span><h3>Level 1: summary, evidence one tap away</h3></div>
+          <div class="frame-body">
+            <div class="mini-levels"><div class="ml">
+              <div class="ml-h"><span class="tag">Level 1</span>Alert summary<small>Do I need to care?</small></div>
+              <div class="ml-b">
+                <div><span class="lbl">Equipment</span><span class="num">Motor M-204</span></div>
+                <div><span class="lbl">Severity</span><span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High risk</span></div>
+                <div><span class="lbl">Predicted failure</span>Bearing degradation</div>
+                <div><span class="lbl">Estimated failure</span><span class="num">Within 72 hours</span></div>
+                <div style="grid-column:1/-1"><span class="lbl">Recommended action</span><b>Inspect bearing assembly</b></div>
+              </div>
+            </div></div>
+          </div>
+          <div class="frame-foot"><b>Same prediction, plus a next step.</b> <a href="#alert" style="color:var(--accent)">Open the live alert</a></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>The engineer's questions, and where PMIP answers them</h2></div>
+        <ul class="qmap">
+          <li><span>Why?</span><span class="where">Level 3 · AI reasoning</span><a href="#alert" data-open-level="3">Open</a></li>
+          <li><span>Which sensor changed, and how abnormal is it?</span><span class="where">Level 2 · Evidence</span><a href="#evidence">Open</a></li>
+          <li><span>How long has it been abnormal?</span><span class="where">Level 2 · 72 hours above range</span><a href="#evidence">Open</a></li>
+          <li><span>Did it spike suddenly, or deteriorate gradually?</span><span class="where">Equipment health · trajectory</span><a href="#health">Open</a></li>
+          <li><span>How confident is the model?</span><span class="where">Level 1 pill · Level 3</span><a href="#alert" data-open-level="3">Open</a></li>
+          <li><span>Which signal contributed most?</span><span class="where">Level 3 · influential signals</span><a href="#alert" data-open-level="3">Open</a></li>
+          <li><span>Has this pattern happened before?</span><span class="where">Level 3 · historical precedent</span><a href="#alert" data-open-level="3">Open</a></li>
+          <li><span>What should I actually do?</span><span class="where">Level 1 · recommended action, then Decision</span><a href="#decision">Open</a></li>
+        </ul>
+      </div>
+
+      <div class="lbl group-label" style="color:var(--fg-2)">2 · Alert detail: information density</div>
+      <div class="compare">
+        <div class="frame">
+          <div class="frame-head"><span class="tag tag-before">Before</span><h3>Everything visible at once</h3></div>
+          <div class="frame-body">
+            <div class="dense">
+              <div class="d wide" style="display:flex;justify-content:space-between;gap:8px"><span><b style="display:inline;margin:0;color:var(--fg)">Motor M-204</b> · Bearing degradation</span><span>Severity HIGH · Confidence 87%</span></div>
+              <div class="d"><b>Vibration chart</b><svg data-spark="m204" data-c="var(--fg-2)" viewBox="0 0 110 28" preserveAspectRatio="none"></svg></div>
+              <div class="d"><b>Temperature chart</b><svg data-spark="late" data-c="var(--fg-2)" viewBox="0 0 110 28" preserveAspectRatio="none"></svg></div>
+              <div class="d"><b>Pressure chart</b><svg data-spark="flat" data-c="var(--fg-2)" viewBox="0 0 110 28" preserveAspectRatio="none"></svg></div>
+              <div class="d"><b>Feature importance</b><table><tr><td>Vibration</td><td>High</td></tr><tr><td>Temperature</td><td>Medium</td></tr><tr><td>Pressure</td><td>Low</td></tr></table></div>
+              <div class="d"><b>Historical examples</b>28 similar · 24 failed within 96 h</div>
+              <div class="d"><b>Maintenance history</b>Lubrication 41 d · Alignment 5 mo · Inspection 11 mo</div>
+              <div class="d wide"><b>Recommendation</b>Inspect bearing assembly within 24 h &nbsp;·&nbsp; Actions: Agree / Disagree / Defer / Escalate / Create work order</div>
+            </div>
+          </div>
+          <div class="frame-foot"><b>Transparent, but overwhelming.</b> Every output is on screen, so the engineer works out what matters before acting.</div>
+        </div>
+        <div class="frame">
+          <div class="frame-head"><span class="tag tag-after">After</span><h3>Summary → Evidence → AI reasoning</h3></div>
+          <div class="frame-body">
+            <div class="mini-levels">
+              <div class="ml"><div class="ml-h"><span class="tag">Level 1</span>Alert summary<small>Do I need to care?</small></div>
+                <div class="ml-b"><div><span class="lbl">Equipment</span><span class="num">Motor M-204</span></div><div><span class="lbl">Severity</span><span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High risk</span></div><div style="grid-column:1/-1"><span class="lbl">Recommended action</span><b>Inspect bearing assembly</b></div></div></div>
+              <div class="ml"><div class="ml-h"><span class="tag">Level 2</span>Evidence<small>Opens on request</small></div></div>
+              <div class="ml"><div class="ml-h"><span class="tag">Level 3</span>AI reasoning<small>Opens on request</small></div></div>
+            </div>
+          </div>
+          <div class="frame-foot"><b>Same information, in order.</b> The operator controls how deep to go. Explainability means the right evidence at the right moment.</div>
+        </div>
+      </div>
+
+      <div class="lbl group-label" style="color:var(--fg-2)">3 · Dashboard: what comes first</div>
+      <div class="compare">
+        <div class="frame">
+          <div class="frame-head"><span class="tag tag-before">Before</span><h3>Chronological alert feed</h3></div>
+          <div class="frame-body"><ul class="feed">
+            <li><span class="t">14:18</span><span>F-09 · Rotor imbalance</span><span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High</span></li>
+            <li><span class="t">14:11</span><span>C-122 · Intake filter clogging</span><span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High</span></li>
+            <li><span class="t">14:02</span><span>M-204 · Bearing degradation</span><span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High</span></li>
+            <li><span class="t">13:47</span><span>HX-115 · Tube fouling</span><span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High</span></li>
+            <li><span class="t">12:30</span><span>C-310 · Discharge valve failure</span><span class="sev sev-crit"><svg class="ico"><use href="#i-crit"/></svg>Critical</span></li>
+          </ul></div>
+          <div class="frame-foot"><b>Newest is not most urgent.</b> The compressor 18 h from failure sits fifth, below an alert 11 days out.</div>
+        </div>
+        <div class="frame">
+          <div class="frame-head"><span class="tag tag-after">After</span><h3>Ranked by urgency and actionability</h3></div>
+          <div class="frame-body"><ul class="feed">
+            <li><span class="t">18 h</span><span>C-310 · Discharge valve failure</span><span class="sev sev-crit"><svg class="ico"><use href="#i-crit"/></svg>Critical</span></li>
+            <li><span class="t">30 h</span><span>P-117 · Impeller cavitation</span><span class="sev sev-crit"><svg class="ico"><use href="#i-crit"/></svg>Critical</span></li>
+            <li><span class="t">40 h</span><span>T-402 · Lube oil degradation</span><span class="sev sev-crit"><svg class="ico"><use href="#i-crit"/></svg>Critical</span></li>
+            <li><span class="t">72 h</span><span>M-204 · Bearing degradation</span><span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High</span></li>
+            <li><span class="t">5 d</span><span>HX-115 · Tube fouling</span><span class="sev sev-high"><svg class="ico"><use href="#i-high"/></svg>High</span></li>
+          </ul></div>
+          <div class="frame-foot"><b>The hierarchy does the first triage.</b> Time to failure sets the order. <a href="#overview" style="color:var(--accent)">Open the live dashboard</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= EDGE STATES ================= -->
+    <section class="view" id="view-states" aria-labelledby="st-h" hidden>
+      <div class="page-head"><div><h1 id="st-h">Edge states</h1><p>How the alert behaves when the system can't give the full picture. Each one is specified in the engineering handoff.</p></div></div>
+      <div class="states">
+        <div>
+          <div class="state-cap"><b>Sensor history is loading</b><span>The latest reading shows immediately. The trend fills in when it arrives.</span></div>
+          <article class="level">
+            <div class="level-head"><span class="tag">Level 2</span><h2>Evidence</h2></div>
+            <div class="level-body" style="display:flex;flex-direction:column;gap:12px">
+              <div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+                <div class="stat hot"><span class="lbl">Current reading</span><span class="v">12.4<small>mm/s</small></span></div>
+                <div class="stat"><span class="lbl">Normal operating range</span><span class="v">2–8<small>mm/s</small></span></div>
+              </div>
+              <div class="skel" style="height:118px" aria-hidden="true"></div>
+              <span style="font-size:13px;color:var(--muted)">Loading vibration history…</span>
+            </div>
+          </article>
+        </div>
+        <div>
+          <div class="state-cap"><b>No active alerts</b><span>The queue is empty. Say so plainly, with the next model run.</span></div>
+          <div class="panel">
+            <div class="panel-head"><h2>Equipment health</h2><span class="meta">0 predictions</span></div>
+            <div class="empty"><svg class="ico"><use href="#i-ok"/></svg><b>Nothing needs attention</b><span>All 24 assets are inside their normal operating ranges. Next model run at <span class="num">14:30</span>.</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="state-cap"><b>Explainability data isn't available</b><span>The model returns a prediction without signal contributions.</span></div>
+          <article class="level">
+            <div class="level-head"><span class="tag">Level 3</span><h2>AI reasoning</h2></div>
+            <div class="level-body" style="display:flex;flex-direction:column;gap:12px">
+              <div class="warnline"><svg class="ico"><use href="#i-info"/></svg><span>Reasoning isn't available for this prediction. Base your decision on the sensor evidence and asset history.</span></div>
+              <div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+                <div class="stat"><span class="lbl">Model confidence</span><span class="v" style="color:var(--muted);font-size:17px">Not provided</span></div>
+                <div class="stat"><span class="lbl">Influential signals</span><span class="v" style="color:var(--muted);font-size:17px">Not provided</span></div>
+              </div>
+            </div>
+            <div class="level-foot"><a class="btn btn-sm" href="#evidence">View evidence</a><a class="btn btn-sm btn-ghost" href="#health">Equipment health</a></div>
+          </article>
+        </div>
+        <div>
+          <div class="state-cap"><b>The operator disagrees</b><span>A reason is required. Nothing is logged until one is chosen.</span></div>
+          <div class="panel">
+            <div class="panel-head"><h2>Disagree / defer</h2></div>
+            <div class="panel-body" style="display:flex;flex-direction:column;gap:12px">
+              <span class="lbl">Provide reason <span style="color:var(--crit)">· required</span></span>
+              <div class="opts">
+                <div class="opt" style="cursor:default"><input type="radio" tabindex="-1" disabled><b>Recently inspected</b></div>
+                <div class="opt" style="cursor:default"><input type="radio" tabindex="-1" disabled><b>Suspected sensor calibration issue</b></div>
+              </div>
+              <div><button class="btn btn-primary btn-sm" type="button" disabled>Log decision</button></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="state-cap"><b>Disabled: Agree not yet available</b><span>The operator hasn't opened the evidence.</span></div>
+          <div class="panel">
+            <div class="panel-head"><h2>Your decision</h2></div>
+            <div class="decide">
+              <div class="authority"><b>Model recommends</b><i></i><b>You decide</b></div>
+              <div class="row"><button class="btn btn-primary" type="button" disabled>Agree</button><button class="btn" type="button">Disagree / defer</button></div>
+              <div class="gate"><svg class="ico"><use href="#i-info"/></svg><span>Open the evidence to enable Agree.</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="state-cap"><b>The API returns an error</b><span>The maintenance system is unreachable. Nothing the operator entered is lost.</span></div>
+          <div class="panel">
+            <div class="panel-head"><h2>Preview</h2><span class="meta num">Draft</span></div>
+            <div class="panel-body" style="display:flex;flex-direction:column;gap:12px">
+              <div class="warnline" style="background:var(--crit-bg);border-color:rgba(255,95,107,.4)"><svg class="ico" style="color:var(--crit)"><use href="#i-crit"/></svg><span>Couldn't reach the maintenance system, so WO-48213 wasn't created. Your entries and the decision record are saved as a draft.</span></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" type="button">Try again</button><button class="btn btn-sm" type="button">Copy details for manual entry</button></div>
+              <span style="font-size:12.5px;color:var(--muted)">The 24 h window keeps counting. M-204 stays at the top of the queue until an action exists.</span>
+            </div>
+          </div>
+        </div>
+        <div style="grid-column:1/-1">
+          <div class="state-cap"><b>A sensor stops reporting</b><span>The operator sees it before trusting the prediction.</span></div>
+          <article class="level">
+            <div class="level-head"><span class="tag">Level 2</span><h2>Evidence</h2></div>
+            <div class="level-body" style="display:flex;flex-direction:column;gap:12px">
+              <div class="sensors" style="margin-top:0"><div class="sensor">
+                <div class="nm">Temperature<small>Drive-end RTD</small><span class="health" style="color:var(--dev)"><i style="background:var(--dev)"></i>No data for 26 min · last reading 13:54</span></div>
+                <span class="sev sev-dev"><svg class="ico"><use href="#i-dev"/></svg>Stale</span>
+                <svg data-spark="late" data-c="var(--muted)" viewBox="0 0 110 28" aria-hidden="true"></svg>
+                <div class="rd" style="color:var(--muted)">71 °C<small>as of 13:54</small></div>
+              </div></div>
+              <div class="warnline"><svg class="ico"><use href="#i-info"/></svg><span>Confidence may be lower than shown while temperature data is missing.</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+<script>
+(function(){
+  var $ = function(s){return document.querySelector(s);}, $$ = function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
+
+  /* ---------- Fleet data (illustrative except M-204, the documented example) ---------- */
+  var rows = [
+    {sev:"crit", id:"C-310", type:"Compressor", issue:"Discharge valve failure", win:"Within 18 h", h:18, spark:"spike", trend:"Sudden · 20 h", conf:91, act:"Isolate and replace discharge valve", st:["ack","Acknowledged"]},
+    {sev:"crit", id:"P-117", type:"Feed pump", issue:"Impeller cavitation damage", win:"Within 30 h", h:30, spark:"rise", trend:"Rising · 4 d", conf:84, act:"Reduce load, inspect impeller", st:["ack","Acknowledged"]},
+    {sev:"crit", id:"T-402", type:"Steam turbine", issue:"Lube oil degradation", win:"Within 40 h", h:40, spark:"gradual", trend:"Gradual · 12 d", conf:89, act:"Replace lube oil and filter", st:["wo","Work order open"]},
+    {sev:"high", id:"M-204", type:"Motor", issue:"Bearing degradation", win:"Within 72 h", h:72, spark:"m204", trend:"Rising · 72 h", conf:87, act:"Inspect bearing assembly", st:["new","New"], focus:true},
+    {sev:"high", id:"HX-115", type:"Heat exchanger", issue:"Tube fouling", win:"Within 5 d", h:120, spark:"gradual", trend:"Gradual · 3 wk", conf:78, act:"Schedule tube cleaning", st:["","Monitoring"]},
+    {sev:"high", id:"P-221", type:"Pump", issue:"Mechanical seal wear", win:"Within 6 d", h:144, spark:"step", trend:"Step change · 2 d", conf:81, act:"Inspect seal faces", st:["","Monitoring"]},
+    {sev:"high", id:"M-118", type:"Motor", issue:"Winding insulation breakdown", win:"Within 9 d", h:216, spark:"gradual", trend:"Gradual · 9 d", conf:74, act:"Run insulation resistance test", st:["","Monitoring"]},
+    {sev:"high", id:"F-09", type:"Fan", issue:"Rotor imbalance", win:"Within 11 d", h:264, spark:"spike", trend:"Intermittent · 5 d", conf:76, act:"Balance check at next stop", st:["","Monitoring"]},
+    {sev:"high", id:"C-122", type:"Compressor", issue:"Intake filter clogging", win:"Within 14 d", h:336, spark:"gradual", trend:"Gradual · 2 wk", conf:80, act:"Replace intake filter", st:["","Monitoring"]},
+    {sev:"dev", id:"G-031", type:"Generator", issue:"Cooling circuit flow decline", win:"Within 18 d", h:432, spark:"gradual", trend:"Gradual · 5 wk", conf:66, act:"Review at next planned stop", st:["","Monitoring"]},
+    {sev:"dev", id:"P-305", type:"Pump", issue:"Early seal leakage trend", win:"Within 21 d", h:504, spark:"step", trend:"Step change · 6 d", conf:63, act:"Add to next inspection round", st:["","Monitoring"]},
+    {sev:"dev", id:"M-051", type:"Motor", issue:"Winding temperature drift", win:"Within 26 d", h:624, spark:"gradual", trend:"Gradual · 6 wk", conf:61, act:"Trend review in 7 d", st:["","Monitoring"]},
+    {sev:"dev", id:"HX-210", type:"Heat exchanger", issue:"Fouling onset", win:"Within 30 d", h:720, spark:"gradual", trend:"Gradual · 8 wk", conf:58, act:"Trend review in 14 d", st:["","Monitoring"]}
+  ];
+  var sevMeta = {crit:{c:"var(--crit)",icon:"i-crit",label:"Critical"}, high:{c:"var(--high)",icon:"i-high",label:"High risk"}, dev:{c:"var(--dev)",icon:"i-dev",label:"Developing"}};
+  var filt = {crit:true, high:true, dev:false};
+
+  /* Seeded noise so the prototype renders identically every time */
+  function rng(seed){ return function(){ seed = (seed*16807)%2147483647; return seed/2147483647 - .5; }; }
+  function series(kind, n, seed){
+    var r = rng(seed||11), out=[], i, t, v;
+    for(i=0;i<n;i++){
+      t = i/(n-1);
+      if(kind==="rise") v = 3 + (t>.55 ? (t-.55)*16 : 0) + r()*.8;
+      else if(kind==="m204") v = 4.5 + (t>.5? (t-.5)*4 : 0) + (t>.78 ? (t-.78)*22 : 0) + r()*.6;
+      else if(kind==="gradual") v = 3 + t*5 + r()*.9;
+      else if(kind==="step") v = (t>.72 ? 7.5 : 3.6) + r()*.7;
+      else if(kind==="spike") v = 3.5 + r()*.8 + ((i%9===4 && t>.3)? 4.5 : 0) + (t>.9 ? 3.5:0);
+      else if(kind==="late") v = 4 + (t>.68 ? (t-.68)*13 : 0) + r()*.5;
+      else v = 4 + r()*.6;
+      out.push(v);
+    }
+    return out;
+  }
+  function sparkPath(vals, w, h, pad){
+    var min=Math.min.apply(null,vals), max=Math.max.apply(null,vals), span=(max-min)||1;
+    return vals.map(function(v,i){
+      var x = pad + i*(w-2*pad)/(vals.length-1), y = h-pad - (v-min)/span*(h-2*pad);
+      return (i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1);
+    }).join(" ");
+  }
+  function drawSpark(svg, kind, color, w, h, seed){
+    var d = sparkPath(series(kind, 36, seed), w, h, 3);
+    var last = d.split(" ").slice(-2), lx = last[0].replace(/[ML]/,""), ly = last[1];
+    svg.innerHTML = '<path d="'+d+' L'+(w-3)+' '+(h-1)+' L3 '+(h-1)+' Z" fill="'+color+'" fill-opacity=".12"/>'+
+      '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>'+
+      '<circle cx="'+lx+'" cy="'+ly+'" r="2.4" fill="'+color+'"/>';
+  }
+
+  /* ---------- Queue with severity filters ---------- */
+  function renderQueue(){
+    var shown = rows.filter(function(r){ return filt[r.sev]; });
+    $("#q-meta").textContent = shown.length+" of "+rows.length+" shown · sorted by time to failure";
+    $("#queue-body").innerHTML = shown.length ? shown.map(function(r){
+      var m = sevMeta[r.sev], idx = rows.indexOf(r);
+      var status = r.focus
+        ? '<a class="btn btn-primary btn-sm" href="#evidence">Review <svg class="ico"><use href="#i-arrow"/></svg></a>'
+        : '<span class="status '+r.st[0]+'"><i></i>'+r.st[1]+'</span>';
+      return '<tr class="r-'+r.sev+(r.focus?' is-focus':'')+'">'+
+        '<td><span class="sev sev-'+r.sev+'"><svg class="ico"><use href="#'+m.icon+'"/></svg>'+m.label+'</span></td>'+
+        '<td class="asset"><b>'+r.id+'</b><span>'+r.type+'</span></td>'+
+        '<td class="issue">'+r.issue+'</td>'+
+        '<td class="window">'+r.win+'</td>'+
+        '<td><div class="trend"><svg viewBox="0 0 84 26" data-row="'+idx+'" aria-hidden="true"></svg>'+r.trend+'</div></td>'+
+        '<td><span class="conf"><span class="conf-bar"><i style="width:'+r.conf+'%"></i></span><b>'+r.conf+'%</b></span></td>'+
+        '<td class="action-txt">'+r.act+'</td>'+
+        '<td>'+status+'</td></tr>';
+    }).join("") : '<tr class="none"><td colspan="8">No assets match the selected filters.</td></tr>';
+    $$("svg[data-row]").forEach(function(s){
+      var i = +s.getAttribute("data-row"), r = rows[i];
+      drawSpark(s, r.spark, sevMeta[r.sev].c, 84, 26, 7 + i*13);
+    });
+  }
+  $$(".fchip").forEach(function(b){
+    b.addEventListener("click", function(){
+      var k = b.getAttribute("data-sev"); filt[k] = !filt[k];
+      b.setAttribute("aria-pressed", filt[k] ? "true" : "false");
+      renderQueue();
+    });
+  });
+  renderQueue();
+  $$("svg[data-spark]").forEach(function(s,i){
+    drawSpark(s, s.getAttribute("data-spark"), s.getAttribute("data-c"), 110, 28, 31+i*17);
+  });
+
+  /* ---------- Predicted failures by window (from the same rows) ---------- */
+  (function(){
+    var bins = [["≤ 24 h",24],["≤ 3 d",72],["≤ 7 d",168],["≤ 14 d",336],["> 14 d",1e9]], cnt = bins.map(function(){return {crit:0,high:0,dev:0};});
+    rows.forEach(function(r){ for(var i=0;i<bins.length;i++){ if(r.h<=bins[i][1]){ cnt[i][r.sev]++; break; } } });
+    var L=30, R=8, T=18, B=28, W=360, H=190, base=H-B, unit=(base-T)/4, bw=34, step=(W-L-R)/bins.length, g="";
+    for(var k=0;k<=4;k++){ var yy=base-k*unit; g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="var(--line)"/><text x="'+(L-8)+'" y="'+(yy+4)+'" text-anchor="end">'+k+'</text>'; }
+    cnt.forEach(function(c,i){
+      var x = L+step*i+(step-bw)/2, y = base, tot=0;
+      ["crit","high","dev"].forEach(function(s){
+        if(!c[s]) return; var h=c[s]*unit; y-=h; tot+=c[s];
+        g+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+(h-1.5)+'" rx="2" fill="'+sevMeta[s].c+'"/>';
+      });
+      g+='<text x="'+(x+bw/2)+'" y="'+(y-6)+'" text-anchor="middle" style="fill:var(--fg);font-weight:600">'+tot+'</text>';
+      g+='<text x="'+(x+bw/2)+'" y="'+(H-8)+'" text-anchor="middle">'+bins[i][0]+'</text>';
+    });
+    $("#win-chart").innerHTML = g;
+  })();
+
+  /* ---------- Maintenance schedule: 8 existing + the one the operator creates ---------- */
+  var sched = [
+    {k:1.67, day:"Today", t:"16:00", a:"P-090", ty:"Pump", task:"Mechanical seal replacement", trg:"p", pr:"Routine", crew:"Mechanical crew A"},
+    {k:11.67, day:"Sat", t:"02:00", a:"C-310", ty:"Compressor", task:"Replace discharge valve", trg:"ai", pr:"Critical", crew:"Mechanical crew B"},
+    {k:19.67, day:"Sat", t:"10:00", a:"P-117", ty:"Feed pump", task:"Impeller inspection, load reduced", trg:"ai", pr:"Critical", crew:"Mechanical crew A"},
+    {k:29.67, day:"Sat", t:"20:00", a:"T-402", ty:"Steam turbine", task:"Lube oil and filter change", trg:"ai", pr:"Critical", crew:"Maintenance team"},
+    {k:65.67, day:"Mon", t:"08:00", a:"M-077", ty:"Motor", task:"Bearing lubrication", trg:"p", pr:"Routine", crew:"Maintenance team"},
+    {k:95.67, day:"Tue", t:"14:00", a:"HX-102", ty:"Heat exchanger", task:"Tube bundle inspection", trg:"p", pr:"Routine", crew:"Mechanical crew B"},
+    {k:112.67, day:"Wed", t:"07:00", a:"F-021", ty:"Fan", task:"Belt tension check", trg:"p", pr:"Routine", crew:"Mechanical crew A"},
+    {k:138.67, day:"Thu", t:"09:00", a:"C-122", ty:"Compressor", task:"Replace intake filter", trg:"ai", pr:"High", crew:"Maintenance team"}
+  ];
+  var newRow = null;
+  function prCls(p){ return p==="Critical" ? "crit" : p==="High" ? "high" : p==="Medium" ? "dev" : ""; }
+  function renderSched(){
+    var all = sched.concat(newRow ? [newRow] : []).sort(function(a,b){return a.k-b.k;});
+    $("#sched-count").textContent = all.length;
+    $("#sched-body").innerHTML = all.map(function(r){
+      var p = r.pr==="Routine" ? '<span class="status"><i></i>Routine</span>' : '<span class="sev sev-'+prCls(r.pr)+'"><svg class="ico"><use href="#'+sevMeta[prCls(r.pr)].icon+'"/></svg>'+r.pr+'</span>';
+      var trg = r.trg==="ai" ? '<span class="trg ai"><svg class="ico"><use href="#i-pulse"/></svg>AI prediction · agreed</span>' : '<span class="trg"><svg class="ico"><use href="#i-cal"/></svg>Planned interval</span>';
+      return '<tr'+(r.fresh?' class="new"':'')+'><td class="asset"><b style="font:500 14px var(--font-data)">'+r.a+'</b><small>'+r.ty+'</small></td><td>'+r.task+'</td><td>'+trg+'</td><td>'+p+'</td><td class="when">'+r.day+' '+r.t+'</td><td>'+r.crew+'</td></tr>';
+    }).join("");
+    $("#dash-sched").innerHTML = all.slice(0,4).map(function(r){
+      return '<li><div class="sched-when">'+r.day+'<b>'+r.t+'</b></div><div class="a">'+r.a+' · '+r.ty+'</div><div class="t">'+r.task+'</div></li>';
+    }).join("");
+  }
+  renderSched();
+
+  /* ---------- M-204 condition data: one source for every chart ---------- */
+  var vib = [], temp = [], r = rng(7), i, t, v;
+  for(i=0;i<=336;i++){
+    t = -28 + i/12;
+    if(t < -21)      v = 4.2 + r()*0.7;
+    else if(t < -14) v = 4.2 + (t+21)/7*0.4 + r()*0.7;
+    else if(t < -8)  v = 4.6 + r()*0.8;
+    else if(t < -4)  v = 5.4 + 0.4*(t+8) + r()*0.8;
+    else if(t < -3)  v = 6.9 + 0.9*(t+4) + r()*0.3;
+    else             v = 8.4 + (t+3)/3*4.0 + r()*0.4;
+    vib.push([t,v]);
+    temp.push([t, (t < -7 ? 57 : 57 + (t+7)/7*15) + r()*1.4]);
+  }
+  [[-9.5,8.9],[-8.5,9.3],[-7.5,8.7]].forEach(function(s){ vib[Math.round((s[0]+28)*12)][1] = s[1]; });
+  vib[336][1] = 12.4;  temp[336][1] = 72;
+
+  function lineChart(svg, o){
+    var vb = svg.viewBox.baseVal, W = vb.width, H = vb.height, L = 44, R = o.R||58, T = o.T||24, B = 28;
+    var x = function(t){return L+(t-o.x0)/(o.x1-o.x0)*(W-L-R);}, y = function(v){return T+(1-(v-o.y0)/(o.y1-o.y0))*(H-T-B);};
+    var pts = o.pts.filter(function(p){return p[0]>=o.x0 && p[0]<=o.x1;});
+    var g = "";
+    if(o.weeks) o.weeks.forEach(function(w,k){
+      g += '<rect x="'+x(w[0])+'" y="'+T+'" width="'+(x(w[1])-x(w[0]))+'" height="'+(y(o.y0)-T)+'" fill="'+(k%2?'var(--surface-2)':'var(--surface)')+'"/>';
+      g += '<text x="'+((x(w[0])+x(w[1]))/2)+'" y="'+(T-8)+'" text-anchor="middle" class="wk">'+w[2]+'</text>';
+    });
+    o.yTicks.forEach(function(val){
+      g += '<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(val)+'" y2="'+y(val)+'" stroke="var(--line)" stroke-width="1"/>';
+      g += '<text x="'+(L-8)+'" y="'+(y(val)+4)+'" text-anchor="end">'+val+'</text>';
+    });
+    if(o.band) g += '<rect x="'+L+'" y="'+y(o.band[1])+'" width="'+(W-L-R)+'" height="'+(y(o.band[0])-y(o.band[1]))+'" fill="var(--ok-bg)"/>';
+    if(o.anomaly){
+      g += '<rect x="'+x(o.anomaly[0])+'" y="'+T+'" width="'+(x(o.anomaly[1])-x(o.anomaly[0]))+'" height="'+(y(o.y0)-T)+'" fill="var(--high-bg)"/>';
+      g += '<line x1="'+x(o.anomaly[0])+'" x2="'+x(o.anomaly[0])+'" y1="'+T+'" y2="'+y(o.y0)+'" stroke="var(--high)" stroke-width="1" stroke-dasharray="3 3"/>';
+      if(o.anomaly[2]) g += '<text class="ann" x="'+(x(o.anomaly[0])+6)+'" y="'+(T+12)+'">'+o.anomaly[2]+'</text>';
+    }
+    if(o.marker){
+      g += '<line x1="'+x(o.marker[0])+'" x2="'+x(o.marker[0])+'" y1="'+T+'" y2="'+y(o.y0)+'" stroke="var(--ok)" stroke-width="1.5"/>';
+      g += '<text class="mk" x="'+(x(o.marker[0])+6)+'" y="'+(T+12)+'">'+o.marker[1]+'</text>';
+    }
+    if(o.limit){
+      g += '<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(o.limit[0])+'" y2="'+y(o.limit[0])+'" stroke="var(--fg-2)" stroke-width="1" stroke-dasharray="5 4"/>';
+      g += '<text class="lim" x="'+(L+6)+'" y="'+(y(o.limit[0])-6)+'">'+o.limit[1]+'</text>';
+    }
+    var line = pts.map(function(p,i){return (i?"L":"M")+x(p[0]).toFixed(1)+" "+y(p[1]).toFixed(1);}).join(" ");
+    g += '<path d="'+line+' L'+x(pts[pts.length-1][0])+' '+y(o.y0)+' L'+x(pts[0][0])+' '+y(o.y0)+' Z" fill="'+o.color+'" fill-opacity=".05"/>';
+    g += '<path d="'+line+'" fill="none" stroke="'+o.color+'" stroke-width="1.6" stroke-linejoin="round"/>';
+    var e = pts[pts.length-1];
+    g += '<circle cx="'+x(e[0])+'" cy="'+y(e[1])+'" r="4.5" fill="'+(o.endColor||'var(--high)')+'" stroke="var(--surface)" stroke-width="2"/>';
+    g += '<text class="end" x="'+(x(e[0])+9)+'" y="'+(y(e[1])+4)+'">'+(o.endLabel||e[1].toFixed(1))+'</text>';
+    o.xTicks.forEach(function(k){
+      g += '<line x1="'+x(k[0])+'" x2="'+x(k[0])+'" y1="'+y(o.y0)+'" y2="'+(y(o.y0)+4)+'" stroke="var(--line-strong)" stroke-width="1"/>';
+      g += '<text x="'+x(k[0])+'" y="'+(H-8)+'" text-anchor="'+(k[2]||"middle")+'">'+k[1]+'</text>';
+    });
+    if(o.unit) g += '<text x="'+(L-8)+'" y="'+(T-8)+'" text-anchor="end">'+o.unit+'</text>';
+    g += '<g class="hov" pointer-events="none"></g>';
+    svg.innerHTML = g;
+    var hov = svg.querySelector(".hov");
+    if(svg._mv) svg.removeEventListener("pointermove", svg._mv);
+    function move(ev){
+      var pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+      var m = svg.getScreenCTM(); if(!m) return;
+      var p = pt.matrixTransform(m.inverse());
+      if(p.x < L || p.x > W-R){ hov.innerHTML = ""; return; }
+      var tt = o.x0 + (p.x-L)/(W-L-R)*(o.x1-o.x0), best = pts[0];
+      pts.forEach(function(q){ if(Math.abs(q[0]-tt) < Math.abs(best[0]-tt)) best = q; });
+      var cx = x(best[0]), cy = y(best[1]);
+      var label = best[1].toFixed(1)+" "+o.u+" · "+o.fmt(best[0]);
+      var bw = label.length*6.6+16, bx = cx+10+bw > W-4 ? cx-10-bw : cx+10, by = Math.max(T, cy-30);
+      hov.innerHTML = '<line x1="'+cx+'" x2="'+cx+'" y1="'+T+'" y2="'+y(o.y0)+'" stroke="var(--fg-2)" stroke-width="1"/>'+
+        '<circle cx="'+cx+'" cy="'+cy+'" r="4" fill="var(--fg)" stroke="var(--surface)" stroke-width="2"/>'+
+        '<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="22" rx="4" fill="var(--surface-3)" stroke="var(--line-strong)"/>'+
+        '<text class="tip" x="'+(bx+8)+'" y="'+(by+15)+'">'+label+'</text>';
+    }
+    svg._mv = move;
+    svg.addEventListener("pointermove", move);
+    if(!svg._lv){ svg._lv = true; svg.addEventListener("pointerleave", function(){ var h = svg.querySelector(".hov"); if(h) h.innerHTML = ""; }); }
+  }
+  function ago(t){ if(t > -0.05) return "now"; var h = Math.round(-t*24), d = Math.floor(h/24); h = h%24; return (d? d+" d ":"")+(h? h+" h ":"")+"ago"; }
+  function dayFmt(t){ var d = Math.floor(t), h = Math.round((t-d)*24); if(h===24){d++;h=0;} return "Day "+(d<0?"−"+(-d):d)+", "+(h<10?"0":"")+h+":00"; }
+
+  /* Level 2 evidence: 3 days by default, 14 days on request */
+  function vibChart(days){
+    var tk = days===3 ? [[-3,"3 d ago","start"],[-2,"2 d"],[-1,"1 d"],[0,"Now","end"]] : [[-14,"14 d ago","start"],[-10,"10 d"],[-7,"7 d"],[-3,"3 d"],[0,"Now","end"]];
+    lineChart($("#vib-chart"), {u:"mm/s", fmt:ago, pts:vib, x0:-days, x1:0, y0:0, y1:14, yTicks:[0,4,8,12], unit:"mm/s", band:[2,8], limit:[8,"Upper limit 8.0"], anomaly:[-3,0,"72 H ABOVE LIMIT"], color:"var(--fg)", endLabel:"12.4", T:26, xTicks:tk});
+  }
+  vibChart(3);
+  $$("[data-range]").forEach(function(b){
+    b.addEventListener("click", function(){
+      $$("[data-range]").forEach(function(o){ o.setAttribute("aria-pressed", o===b ? "true":"false"); });
+      vibChart(+b.getAttribute("data-range"));
+    });
+  });
+  var weeks = [[-28,-21,"WEEK 1"],[-21,-14,"WEEK 2"],[-14,-7,"WEEK 3"],[-7,0,"WEEK 4"]];
+  lineChart($("#health-vib"), {u:"mm/s", fmt:ago, pts:vib, x0:-28, x1:0, y0:0, y1:14, yTicks:[0,4,8,12], unit:"mm/s", band:[2,8], limit:[8,"Limit 8.0"], anomaly:[-3,0], weeks:weeks, color:"var(--fg)", endLabel:"12.4",
+    xTicks:[[-28,"28 d ago","start"],[-21,"21 d"],[-14,"14 d"],[-7,"7 d"],[0,"Now","end"]]});
+  lineChart($("#health-temp"), {u:"°C", fmt:ago, pts:temp, x0:-28, x1:0, y0:30, y1:80, yTicks:[40,50,60,70], unit:"°C", band:[40,70], limit:[70,"Limit 70"], color:"var(--dev)", endLabel:"72",
+    xTicks:[[-28,"28 d ago","start"],[-21,"21 d"],[-14,"14 d"],[-7,"7 d"],[0,"Now","end"]]});
+  var post = [], rp = rng(19);
+  for(i=0;i<=60;i++){ t = -2 + i/12; v = t < 0 ? 9.7 + (t+2)/2*2.7 + rp()*0.4 : (t < 1.34 ? 12.4 + t*0.35 + rp()*0.4 : 2.9 + rp()*0.5); post.push([t,v]); }
+  post[60][1] = 2.9;
+  lineChart($("#post-chart"), {u:"mm/s", fmt:dayFmt, pts:post, x0:-2, x1:3, y0:0, y1:14, yTicks:[0,4,8,12], unit:"mm/s", band:[2,8], limit:[8,"Limit 8.0"], marker:[1.34,"BEARING REPLACED"], color:"var(--fg)", endColor:"var(--ok)", endLabel:"2.9",
+    xTicks:[[-2,"Day −2","start"],[-1,"Day −1"],[0,"Day 0"],[1,"Day 1"],[2,"Day 2"],[3,"Day 3","end"]]});
+
+  var dh=""; for(var d=0; d<28; d++) dh += '<i'+(d>=24?' class="no"':'')+'></i>'; $("#prec-dots").innerHTML = dh;
+
+  /* ---------- Equipment health tabs ---------- */
+  var tabs = $$(".tabs [role=tab]");
+  function pickTab(tb){
+    tabs.forEach(function(x){
+      var on = x===tb; x.setAttribute("aria-selected", on?"true":"false"); x.tabIndex = on?0:-1;
+      $("#"+x.getAttribute("aria-controls")).hidden = !on;
+    });
+  }
+  tabs.forEach(function(tb,ix){
+    tb.addEventListener("click", function(){ pickTab(tb); });
+    tb.addEventListener("keydown", function(e){
+      var n = e.key==="ArrowRight" ? ix+1 : e.key==="ArrowLeft" ? ix-1 : -1;
+      if(n<0) return; n = (n+tabs.length)%tabs.length; pickTab(tabs[n]); tabs[n].focus(); e.preventDefault();
+    });
+  });
+
+  /* ---------- State shared across screens ---------- */
+  var S = {level:1, maxLevel:1, choice:null, logged:false, wo:false, want:0};
+
+  /* ---------- Progressive disclosure: the operator controls depth ---------- */
+  function setLevel(n, focus){
+    S.level = n; if(n > S.maxLevel) S.maxLevel = n;
+    $("#lv2").hidden = n < 2; $("#lv3").hidden = n < 3;
+    $("#lv1-foot").hidden = n >= 2; $("#lv2-foot").hidden = n >= 3;
+    $$(".depth button").forEach(function(b){
+      var bn = +b.getAttribute("data-level");
+      b.classList.toggle("on", bn <= n); b.classList.toggle("cur", bn === n);
+      b.setAttribute("aria-pressed", bn <= n ? "true" : "false");
+    });
+    gate();
+    if(focus){
+      var el = $("#lv"+n);
+      el.classList.remove("reveal"); void el.offsetWidth; el.classList.add("reveal");
+      if(n>1) el.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto":"smooth", block:"start"});
+    }
+  }
+  $$("[data-level]").forEach(function(b){ b.addEventListener("click", function(){ setLevel(+b.getAttribute("data-level"), true); }); });
+  $$("[data-open-level]").forEach(function(a){ a.addEventListener("click", function(){ S.want = +a.getAttribute("data-open-level"); if(location.hash==="#alert") show(); }); });
+
+  /* Agree is only available once the evidence has been opened */
+  function gate(){
+    var ok = S.maxLevel >= 2;
+    $("#rail-agree").disabled = !ok;
+    $("#rail-gate").hidden = ok;
+    $("#dec-agree").disabled = !ok;
+    $("#agree-gate").hidden = ok;
+    if(!ok && S.choice==="agree"){ S.choice = null; syncChoice(); }
+    var names = [["Summary",1],["Evidence",2],["Reasoning",3]];
+    $("#reviewed").innerHTML = names.map(function(nm){
+      var done = S.maxLevel >= nm[1];
+      return '<span class="chip '+(done?'done':'miss')+'"><svg class="ico"><use href="#'+(done?'i-ok':'i-info')+'"/></svg>'+nm[0]+(done?' opened':' not opened')+'</span>';
+    }).join("");
+  }
+  $("#rail-agree").addEventListener("click", function(){ S.choice="agree"; location.hash="#decision"; });
+  $("#rail-disagree").addEventListener("click", function(){ S.choice="disagree"; location.hash="#decision"; });
+
+  /* ---------- Decision ---------- */
+  function syncChoice(){
+    var c = S.choice;
+    $("#dec-agree").setAttribute("aria-pressed", c==="agree" ? "true":"false");
+    $("#dec-agree").textContent = c==="agree" ? "✓ Agreed with recommendation" : "Agree with recommendation";
+    $("#dec-disagree").setAttribute("aria-pressed", c==="disagree" ? "true":"false");
+    $("#agree-panel").hidden = c !== "agree";
+    $("#disagree-panel").hidden = c !== "disagree";
+  }
+  $("#dec-agree").addEventListener("click", function(){ if(this.disabled) return; S.choice = "agree"; syncChoice(); });
+  $("#dec-disagree").addEventListener("click", function(){ S.choice = "disagree"; syncChoice(); });
+  $$("input[name=reason]").forEach(function(inp){ inp.addEventListener("change", function(){ $("#log-btn").disabled = false; }); });
+  $("#decide-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var reason = ($("input[name=reason]:checked")||{}).value; if(!reason) return;
+    var esc = $("#n2").checked;
+    var next = esc ? "Escalated to the reliability engineer on call." : "M-204 stays in the attention queue under monitoring.";
+    var note = $("#dec-note").value.trim();
+    S.logged = true;
+    $("#decide-form").hidden = true;
+    var box = $("#logged"); box.hidden = false;
+    box.innerHTML = '<div class="logged"><svg class="ico"><use href="#i-ok"/></svg><div><b>Decision logged · '+(esc?"Escalated":"Deferred")+'</b><span>Reason: '+reason+'. '+(note?'Note saved. ':'')+next+' Your reason is shared with the product and ML teams.</span></div></div>'+
+      '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-sm" href="#overview">Back to dashboard</a><button class="btn btn-sm btn-ghost" type="button" id="undo">Change decision</button></div>';
+    $("#undo").addEventListener("click", function(){ box.hidden = true; $("#decide-form").hidden = false; S.logged = false; });
+  });
+
+  /* ---------- Create maintenance action ---------- */
+  var NOW = new Date(); NOW.setHours(14,20,0,0);
+  function pad(n){ return (n<10?"0":"")+n; }
+  function iso(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  var tmr = new Date(NOW.getTime()+86400000);
+  $("#m-date").value = iso(tmr); $("#m-time").value = "06:00";
+  $("#m-date").min = iso(NOW);
+  var DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  function slot(){
+    var dv = $("#m-date").value, tv = $("#m-time").value; if(!dv || !tv) return null;
+    var p = dv.split("-"), q = tv.split(":"), dt = new Date(+p[0], +p[1]-1, +p[2], +q[0], +q[1]);
+    var same = iso(dt)===iso(NOW);
+    return {dt:dt, label:(same?"Today":DAYS[dt.getDay()]+" "+dt.getDate()+" "+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][dt.getMonth()])+" "+tv, hrs:(dt-NOW)/3600000, day:same?"Today":DAYS[dt.getDay()], t:tv};
+  }
+  function syncWO(){
+    var prio = ($("input[name=prio]:checked")||{}).value || "High";
+    var pe = $("#wo-prio"); pe.textContent = prio;
+    pe.style.color = prio==="Critical" ? "var(--crit)" : prio==="Medium" ? "var(--dev)" : "var(--high)";
+    var sl = slot();
+    $("#wo-slot").textContent = sl ? sl.label : "Not scheduled";
+    $("#wo-crew").textContent = $("#m-team").value;
+    $("#wo-att").textContent = $$("input[name=att]:checked").length;
+    var warn = [];
+    if(!sl) warn.push("Choose a date and time to schedule the action.");
+    else if(sl.hrs < 0) warn.push("That time has already passed.");
+    else if(sl.hrs > 24) warn.push("This is after the 24 h window the model recommends.");
+    if(!$("#at1").checked || !$("#at2").checked) warn.push("The crew won't see why this was flagged without the evidence and reasoning attached.");
+    if(prio==="Medium") warn.push("Medium priority may not meet the 24 h window.");
+    $("#wo-warn").hidden = !warn.length; $("#wo-warn-t").textContent = warn.join(" ");
+    return sl;
+  }
+  $("#maint-form").addEventListener("change", syncWO);
+  $("#maint-form").addEventListener("input", syncWO);
+  $("#maint-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var sl = syncWO();
+    if(!sl || sl.hrs < 0){ $("#create-hint").textContent = "Set a valid date and time first."; return; }
+    $("#create-hint").textContent = "";
+    var prio = ($("input[name=prio]:checked")||{}).value || "High", crew = $("#m-team").value;
+    S.wo = true;
+    newRow = {k:sl.hrs, day:sl.day, t:sl.t, a:"M-204", ty:"Motor", task:"Inspect bearing assembly", trg:"ai", pr:prio, crew:crew, fresh:true};
+    $("#sched-new-t").textContent = "WO-48213 created for Motor M-204: Inspect bearing assembly, "+sl.label+", "+crew+". Evidence snapshot, AI reasoning and decision record are attached.";
+    renderSched();
+    location.hash = "#schedule";
+  });
+  syncWO();
+
+  /* ---------- Views ---------- */
+  var navFor = {overview:"overview", evidence:"alert", alert:"alert", decision:"alert", health:"health", schedule:"schedule", maintenance:"schedule", history:"schedule", compare:"compare", states:"states"};
+  function show(){
+    var v = (location.hash||"#overview").slice(1);
+    if(!navFor[v]) v = "overview";
+    var view = v==="evidence" ? "alert" : v;
+    $$(".view").forEach(function(s){ s.hidden = s.id !== "view-"+view; });
+    $$(".nav a").forEach(function(a){
+      if(a.getAttribute("data-nav")===navFor[v]) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");
+    });
+    if(v==="evidence") setLevel(Math.max(S.level,2), true);
+    else if(v==="alert"){ if(S.want){ setLevel(S.want, true); S.want = 0; } else setLevel(S.level,false); }
+    if(v==="decision"){ gate(); syncChoice(); }
+    if(v==="maintenance"){
+      var cr = $("#carry"); cr.className = "carry"+(S.choice==="agree" ? "" : " warn");
+      cr.innerHTML = S.choice==="agree"
+        ? '<svg class="ico"><use href="#i-ok"/></svg><span>Carried over from your decision: <b>Agreed</b> · M-204 · Bearing degradation · evidence '+(S.maxLevel>=3?'and AI reasoning':'')+' opened.</span>'
+        : '<svg class="ico"><use href="#i-info"/></svg><span>You haven\'t agreed to the recommendation yet. You can still create the action, and it will be logged as raised manually.</span>';
+    }
+    $("#sched-new").hidden = !(v==="schedule" && S.wo);
+    if(v==="history"){ $("#wo-created").hidden = !S.wo; $("#wo-created-t").textContent = "WO-48213 for M-204 was created from your decision. The record below shows how a completed action closes the loop."; }
+    window.scrollTo(0,0);
+  }
+  window.addEventListener("hashchange", show);
+  $("[data-nav=analytics]").addEventListener("click", function(e){ e.preventDefault(); });
+  setLevel(1,false);
+  show();
+})();
+</script>
+
+</body>
+</html>

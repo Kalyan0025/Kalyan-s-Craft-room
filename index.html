@@ -820,11 +820,11 @@ function camUpd(dt){
 }
 /* ---------- cards: boxes fit whole cells on each plane ---------- */
 var WORK=[
- {n:'ProMove x Procreate',d:'Concept',yr:'2026',x:0,y:0,w:9.5,h:5.34,vid:VD.promove,poster:PS.promove,m:{x:0,y:0,w:12,h:6.75}},
+ {n:'ProMove x Procreate',d:'Concept',yr:'2026',x:0,y:0,w:9.5,h:5.34,href:'work/promove/',vid:VD.promove,poster:PS.promove,m:{x:0,y:0,w:12,h:6.75}},
  {n:'Keep x Meta',d:'Concept, Shipped',yr:'2026',x:10.5,y:1.6,w:9.5,h:5.34,vid:VD.keep,poster:PS.keep,m:{x:0,y:9.2,w:12,h:6.75}},
- {n:'Smart Triage x Mayo Clinic',d:'Healthcare',yr:'2025',x:0,y:7.4,w:9.5,h:5.4,vid:VD.mayo,poster:PS.mayo,m:{x:0,y:18.4,w:12,h:6.82}},
+ {n:'Smart Triage x Mayo Clinic',d:'Healthcare',yr:'2025',x:0,y:7.4,w:9.5,h:5.4,href:'work/mayo/',vid:VD.mayo,poster:PS.mayo,m:{x:0,y:18.4,w:12,h:6.82}},
  {n:'Homie.AI',d:'Venture Build',yr:'2026',x:10.5,y:9,w:7,h:5.66,vid:VD.homie,poster:PS.homie,m:{x:0,y:27.6,w:12,h:9.7}},
- {n:'PMIP x Siemens',d:'Shipped',yr:'2024',x:0,y:15.2,w:9.5,h:4.48,vid:VD.siemens,poster:PS.siemens,m:{x:0,y:40.1,w:12,h:5.66}},
+ {n:'PMIP x Siemens',d:'Shipped',yr:'2024',x:0,y:15.2,w:9.5,h:4.48,href:'work/pmip/',vid:VD.siemens,poster:PS.siemens,m:{x:0,y:40.1,w:12,h:5.66}},
  {n:'Uni-Verse',d:'Social Engagement',yr:'2025',x:10.5,y:16.6,w:4.6,h:6.26,vid:VD.uni,poster:PS.uni,m:{x:0,y:48.9,w:6.4,h:8.7}},
  {n:'Aro.AI',d:'Venture Build',yr:'2026',x:0,y:21.4,w:7,h:3.7,img:IMG.aro,m:{x:7.2,y:48.9,w:4.8,h:2.54}}
 ];
@@ -884,12 +884,12 @@ var PLAY=(function(){function P(n,d,x,y,w,h,k,m){return {n:n,d:d,x:x,y:Math.roun
  P('LiveSync','Google Photos',6.5,14.6,6.5,6.35,'livesync',{x:0,y:33.6,w:6.3,h:6.15}),
  P('Active Zen','Wellness',14,15,6,5.87,'zen',{x:6.7,y:33.6,w:6.3,h:6.15})]})();
 function placeCards(P,mob){P.list.forEach(function(d,k){var g=mob&&d.m?d.m:d,s=P.els[k].style;s.left=g.x*55+'px';s.top=g.y*55+'px';s.width=g.w*55+'px';P.els[k].firstChild.style.height=g.h*55+'px'});P.mode=mob}
-function mkCards(list,host){var els=[];list.forEach(function(d){var a=document.createElement('a');a.className='card';a.href='#';a.setAttribute('aria-label',d.n+', '+d.d);
+function mkCards(list,host){var els=[];list.forEach(function(d){var a=document.createElement('a');a.className='card';a.href=d.href||'#';a.setAttribute('aria-label',d.n+', '+d.d);
   if(d.yr!==undefined||d.bg){a.classList.add('wk');a.innerHTML='<span class="box"></span><span class="cap"><b></b><i>/</i><span class="ds"></span></span>';a.querySelector('b').textContent=d.n;a.querySelector('.ds').textContent=(d.d||'')+(d.yr?(d.d?' ':'')+d.yr:'');if(d.bg)a.firstChild.style.background=d.bg}
   else if(d.d){a.innerHTML='<span class="box"></span><span class="cap"><b></b><i>/</i><span></span></span>';a.querySelector('b').textContent=d.n;a.querySelector('.cap span').textContent=d.d}else a.innerHTML='<span class="box"></span>';
   if(d.vid){var v=document.createElement('video');v.className='vd';v.muted=true;v.defaultMuted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='auto';if(d.poster)v.poster=d.poster;v.src=d.vid;a.firstChild.appendChild(v);a._vd=v}
   if(d.img){var bx=a.firstChild;bx.style.backgroundImage='url('+d.img+')';bx.style.backgroundSize='cover';bx.style.backgroundPosition='center'}
-  a.addEventListener('click',function(e){e.preventDefault()});host.appendChild(a);els.push(a)});return els}
+  a.addEventListener('click',function(e){if(!d.href)e.preventDefault()});host.appendChild(a);els.push(a)});return els}
 function mkPlane(list,id){var h=document.createElement('div');h.className='cards';h.id=id;var pl=document.createElement('div');pl.className='pl';h.appendChild(pl);document.body.appendChild(h);
   var els=mkCards(list,pl);list.forEach(function(d,k){var s=els[k].style;s.left=d.x*55+'px';s.top=d.y*55+'px';s.width=d.w*55+'px';els[k].firstChild.style.height=d.h*55+'px'});return {h:h,pl:pl,els:els,list:list}}
 ['cardsW','cardsD'].forEach(function(n){var e=document.getElementById(n);if(e)e.remove()});

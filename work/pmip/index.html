@@ -1,0 +1,1706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Siemens PMIP case study by Kalyan Kadavanti Sudhakar: designing explainable, human-in-the-loop AI for predictive maintenance.">
+<title>PMIP Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Libre+Baskerville:wght@400;700&display=swap">
+<style>
+/* Layout: one reading column (680px text, 1040px visuals) beside a sticky contents rail; light only, by request. */
+:root{
+  color-scheme:light;
+  --bg:#f5f5f5;--paper:#ebecee;--paper-2:#e2e4e7;--line:#dcdee1;--line-2:#c6c9ce;
+  --ink:#404042;--ink-2:#5c6877;--muted:#8b939e;
+  --accent:#e65f2e;--accent-deep:#e65f2e;--accent-soft:rgba(50,64,79,.1);--accent-line:rgba(230,95,46,.4);
+  --crit:#7b7b7d;--crit-soft:#f2f2f4;--warn:#4d4d4f;--warn-soft:#ececee;--ok:#4c4c4e;--ok-soft:#ebebed;
+  --f-display:"Libre Baskerville",Georgia,serif;--f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--f-mono:"Inter",system-ui,sans-serif;
+  --r:2px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--f-display);color:var(--ink);margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:3px;border-radius:4px}
+button{font:inherit;color:inherit}
+.mono{font-family:var(--f-mono)}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Shell ---------- */
+.shell{display:grid;grid-template-columns:210px minmax(0,1fr);gap:56px;max-width:1340px;margin:0 auto;padding-inline:32px}
+.toc{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;padding-block:40px;max-height:100vh;overflow:auto}
+.toc .back{display:inline-flex;gap:6px;font-size:14px;color:var(--ink-2);text-decoration:none;margin-bottom:28px}
+.toc .back:hover{color:var(--accent)}
+.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.toc a{display:block;padding:6px 10px;border-left:2px solid var(--line);color:var(--muted);text-decoration:none;font-size:14.5px;line-height:1.35}
+.toc a:hover{color:var(--ink)}
+.toc a[aria-current="true"]{color:var(--accent-deep);border-left-color:var(--accent);font-weight:600}
+main{min-width:0;padding-block:40px 120px}
+.col{max-width:1040px}
+.text{max-width:680px}
+
+/* ---------- Review banner (stage 1 only) ---------- */
+.review{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;padding:12px 16px;border:1px dashed var(--line-2);border-radius:var(--r);font-size:14px;color:var(--ink-2);margin-bottom:48px}
+.review b{color:var(--ink)}
+.src{display:inline-flex;align-items:center;gap:6px;font:500 11.5px/1 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;padding:5px 8px;border-radius:4px;white-space:nowrap}
+.src::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.src.doc{color:var(--accent-deep);background:var(--accent-soft)}
+.src.syn{color:var(--warn);background:var(--warn-soft)}
+.src.mix{color:var(--ink-2);background:var(--paper-2)}
+
+/* ---------- Hero ---------- */
+.eyebrow{font:500 12.5px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-deep)}
+.hero{display:flex;flex-direction:column;gap:22px}
+.hero h1{font-size:clamp(34px,4.6vw,54px);line-height:1.06;font-weight:600;letter-spacing:-.022em;max-width:17ch}
+em.k{font-style:italic;color:var(--accent);font-weight:inherit}
+.hero .lede{font-size:20px;line-height:1.55;color:var(--ink-2);max-width:640px}
+.meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:8px}
+.meta div{padding:16px 18px 16px 0;display:flex;flex-direction:column;gap:4px;min-width:0}
+.meta div+div{padding-left:18px;border-left:1px solid var(--line)}
+.lbl{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.meta b{font-weight:600;font-size:15.5px;line-height:1.4}
+.shot{border-radius:12px;overflow:hidden;border:1px solid var(--line-2);background:#101012;box-shadow:0 24px 60px -30px rgba(64,64,66,.35)}
+.shot .bar{display:flex;gap:6px;padding:10px 12px;background:#1c1c1e}
+.shot .bar i{width:9px;height:9px;border-radius:50%;background:#39424a}
+.shot img{display:block;width:100%;height:auto}
+.cap{font-size:14px;color:var(--muted);margin-top:10px}
+
+/* ---------- Sections ---------- */
+section.s{padding-top:112px;display:flex;flex-direction:column;gap:28px}
+.s-head{display:flex;flex-direction:column;gap:14px}
+.s-head h2{font-size:clamp(27px,3vw,36px);line-height:1.14;font-weight:600;letter-spacing:-.015em;max-width:24ch}
+.s-head .row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.s-head p{color:var(--ink-2);max-width:680px}
+.vis-note{font-size:14.5px;color:var(--muted);max-width:680px}
+.panel{border:1px solid var(--line);border-radius:var(--r);background:var(--bg)}
+.paper{background:var(--paper);border-radius:var(--r)}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.stat{padding:22px 20px;background:var(--paper);border-radius:var(--r);display:flex;flex-direction:column;gap:8px}
+.stat .v{font:600 44px/1 var(--f-display);color:var(--accent-deep);letter-spacing:-.02em}
+.stat .v small{font-size:22px}
+.stat b{font-size:16px;line-height:1.3}
+.stat p{font-size:14px;color:var(--ink-2);line-height:1.45}
+
+/* segmented toggle */
+.seg{display:inline-flex;padding:3px;border-radius:8px;background:var(--paper-2);gap:2px}
+.seg button{border:0;background:transparent;padding:8px 14px;border-radius:6px;font-weight:600;font-size:14.5px;color:var(--ink-2);cursor:pointer;min-height:40px}
+.seg button[aria-pressed="true"]{background:var(--bg);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+/* V1 question wall */
+.qw{display:grid;grid-template-columns:300px minmax(0,1fr);gap:28px;align-items:start;padding:28px}
+.oldcard{background:#161618;color:#ececee;border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:6px;font-family:var(--f-mono)}
+.oldcard .t{font-size:11px;letter-spacing:.14em;color:#8b989d}
+.oldcard b{font-size:18px;font-weight:500}
+.oldcard .p{font-family:var(--f-body);font-size:15px}
+.oldcard .sev{align-self:flex-start;margin-top:4px;font:600 11.5px/1 var(--f-mono);letter-spacing:.06em;padding:5px 8px;border-radius:4px;border:1px solid #8a8a8c;color:#a8a8aa}
+.qw-side{display:flex;flex-direction:column;gap:14px}
+.qw-count{font-size:15px;color:var(--ink-2)}
+.qw-count b{font:600 22px/1 var(--f-display);color:var(--ink)}
+.qgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.q{padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;gap:6px;min-width:0;transition:border-color .25s,background .25s}
+.q span{font-weight:600;font-size:15.5px;line-height:1.3}
+.q small{font:500 11.5px/1.3 var(--f-mono);color:var(--muted);letter-spacing:.02em}
+.qw[data-mode="old"] .q small::before{content:"Not answered"}
+.qw[data-mode="old"] .q small span{display:none}
+.qw[data-mode="new"] .q{border-color:var(--accent-line);background:var(--accent-soft)}
+.qw[data-mode="new"] .q small{color:var(--accent-deep)}
+
+/* V2 research */
+.funnel{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.funnel div{padding:18px 16px;display:flex;flex-direction:column;gap:6px;position:relative;min-width:0;background:var(--bg)}
+.funnel div+div{border-left:1px solid var(--line)}
+.funnel div:nth-child(n){background:color-mix(in srgb,var(--accent-soft) calc(var(--i)*22%),var(--bg))}
+.funnel .v{font:600 30px/1 var(--f-display);color:var(--accent-deep)}
+.funnel b{font-size:15px;line-height:1.3}
+.funnel p{font-size:13.5px;color:var(--ink-2);line-height:1.4}
+.users{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.user{padding:20px;border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;gap:12px}
+.user h3{font-size:18px;font-weight:600}
+.user .need{font-family:var(--f-display);font-style:italic;font-size:17px;line-height:1.35;color:var(--accent-deep)}
+.user .depth{display:flex;gap:4px;align-items:center;font:500 11.5px/1 var(--f-mono);color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.user .depth i{width:22px;height:6px;border-radius:2px;background:var(--line)}
+.user .depth i.on{background:var(--accent)}
+.user p{font-size:14.5px;color:var(--ink-2)}
+
+/* said vs did */
+.saydid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.3fr);gap:16px}
+.say{padding:22px;background:var(--paper);border-radius:var(--r);display:flex;flex-direction:column;gap:10px}
+.say q{font-family:var(--f-display);font-size:21px;line-height:1.3;font-style:italic;quotes:"\201C" "\201D"}
+.did{padding:22px;border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;gap:14px;min-width:0}
+.path{display:flex;flex-wrap:wrap;gap:8px 0;align-items:center}
+.path span{padding:8px 12px;border-radius:6px;background:var(--paper);font-size:14.5px;font-weight:600;white-space:nowrap}
+.path span.loop{background:var(--warn-soft);color:var(--warn)}
+.path span.end{background:var(--accent);color:#fff}
+.path i{width:22px;height:1.5px;background:var(--line-2);position:relative;margin:0 2px}
+.path i::after{content:"";position:absolute;right:-1px;top:-3px;border:4px solid transparent;border-left:5px solid var(--line-2);border-right:0}
+.did p{font-size:14.5px;color:var(--ink-2)}
+
+/* V3 screen-question map */
+.flowmap{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+.fm{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 10px;border-radius:8px;border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-width:0;min-height:96px;background:var(--bg)}
+.fm .st{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.fm b{font-size:13.5px;line-height:1.3;font-weight:600;overflow-wrap:anywhere;hyphens:auto}
+.fm:hover{border-color:var(--accent-line)}
+.fm[aria-selected="true"]{background:var(--accent);border-color:var(--accent)}
+.fm[aria-selected="true"] .st,.fm[aria-selected="true"] b{color:#fff}
+.fm:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+.fm-view{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.9fr);gap:24px;align-items:center;padding:24px;background:var(--paper);border-radius:var(--r)}
+.fm-view .qq{font:600 26px/1.2 var(--f-display);letter-spacing:-.01em}
+.fm-view .scr{font:500 12.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent-deep)}
+.fm-view p{font-size:15px;color:var(--ink-2)}
+.fm-view .txt{display:flex;flex-direction:column;gap:12px;min-width:0}
+.fm-view .shot{box-shadow:0 14px 34px -22px rgba(64,64,66,.4)}
+
+/* V4 compare slider */
+.cmp{position:relative;max-width:900px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line-2);background:#121214;user-select:none;touch-action:pan-y}
+.cmp img{display:block;width:100%;height:auto}
+.cmp .after{position:absolute;inset:0;clip-path:inset(0 0 0 var(--x,50%))}
+.cmp .after img{height:100%;object-fit:cover}
+.cmp .handle{position:absolute;top:0;bottom:0;left:var(--x,50%);width:2px;background:#fff;transform:translateX(-1px);pointer-events:none}
+.cmp .knob{position:absolute;top:50%;left:50%;width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);display:grid;place-items:center;color:var(--accent-deep);font:700 15px/1 var(--f-mono)}
+.cmp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+.cmp:has(input:focus-visible){outline:3px solid var(--accent);outline-offset:3px}
+.cmp-labels{display:flex;justify-content:space-between;max-width:900px;font:500 12.5px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* V5 layers */
+.layers{display:flex;flex-direction:column;gap:10px;max-width:900px}
+.layer{border:1px solid var(--line);border-radius:var(--r);background:var(--bg);overflow:hidden}
+.layer>button{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:16px;align-items:center;padding:16px 20px}
+.layer>button:focus-visible{outline:2.5px solid var(--accent);outline-offset:-3px}
+.layer .lv{font:600 12px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);padding:6px 8px;border-radius:4px;text-align:center}
+.layer h3{font-size:19px;font-weight:600}
+.layer .q2{font-size:15px;color:var(--ink-2);font-style:italic}
+.layer .dens{display:flex;gap:3px}
+.layer .dens i{width:8px;height:18px;border-radius:2px;background:var(--line)}
+.layer .dens i.on{background:var(--accent)}
+.layer .body{padding:0 20px 20px 108px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.layer .chip{padding:10px 12px;background:var(--paper);border-radius:6px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.layer .chip b{font:500 15px/1.3 var(--f-mono)}
+.layer .chip.hot b{color:var(--warn)}
+.layer[data-open="true"]{border-color:var(--accent-line);box-shadow:0 10px 30px -22px rgba(230,95,46,.5)}
+.layer:nth-child(2){margin-left:18px}.layer:nth-child(3){margin-left:36px}
+
+/* V6 decision log */
+.dlog{display:grid;grid-template-columns:270px minmax(0,1fr);gap:24px;align-items:start}
+.dtabs{display:flex;flex-direction:column;gap:4px}
+.dtab{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 14px;border-radius:8px;display:flex;gap:12px;align-items:baseline;font-weight:600;font-size:15px;line-height:1.3;color:var(--ink-2)}
+.dtab .n{font:500 12px/1 var(--f-mono);color:var(--muted)}
+.dtab:hover{background:var(--paper)}
+.dtab[aria-selected="true"]{background:var(--accent-soft);color:var(--accent-deep)}
+.dtab[aria-selected="true"] .n{color:var(--accent-deep)}
+.dtab:focus-visible{outline:2.5px solid var(--accent);outline-offset:-2px}
+.dpanel{display:flex;flex-direction:column;gap:18px;padding:24px;border:1px solid var(--line);border-radius:var(--r);min-width:0}
+.dpanel .ctx{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.dpanel h3{font-size:22px;font-weight:600;line-height:1.25}
+.opts2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.opt2{padding:16px;border-radius:8px;border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-width:0}
+.opt2 .tag{font:500 11.5px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.opt2 b{font-size:16.5px;line-height:1.3}
+.opt2 p{font-size:14.5px;color:var(--ink-2)}
+.opt2.chosen{border-color:var(--accent);background:var(--accent-soft)}
+.opt2.chosen .tag{color:var(--accent-deep)}
+.opt2.rej{background:var(--paper);border-style:dashed}
+.opt2.rej b{color:var(--ink-2)}
+.why{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px 16px;font-size:15.5px}
+.why .lbl{padding-top:3px}
+
+/* V7 authority */
+.auth{display:grid;grid-template-columns:120px repeat(5,minmax(0,1fr));grid-template-rows:auto auto;gap:10px;padding:24px;border:1px solid var(--line);border-radius:var(--r)}
+.lane-l{display:flex;align-items:center;font:600 13px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase}
+.lane-l.m{color:var(--muted)}.lane-l.h{color:var(--accent-deep)}
+.astep{all:unset;box-sizing:border-box;cursor:pointer;padding:14px;border-radius:8px;min-height:84px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.astep b{font-size:15.5px;line-height:1.25}
+.astep small{font-size:13px;color:var(--ink-2)}
+.astep.m{background:var(--paper);border:1px solid var(--line)}
+.astep.h{background:var(--accent-soft);border:1px solid var(--accent-line)}
+.astep[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.astep:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+.ghost{border:0}
+.handoff{grid-column:2/-1;display:flex;align-items:center;gap:10px;font:500 12px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent-deep)}
+.auth-detail{padding:16px 20px;background:var(--paper);border-radius:8px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:15.5px}
+.auth-detail .ex{font:500 14px/1.5 var(--f-mono);color:var(--ink)}
+
+/* V8 decision flow */
+.dflow{display:flex;flex-direction:column;gap:14px;padding:24px;border:1px solid var(--line);border-radius:var(--r)}
+.dstart{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;padding:16px 18px;background:var(--paper);border-radius:8px}
+.dstart b{font-size:17px}
+.dstart .seg button{min-width:110px}
+.branches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.br{display:flex;flex-direction:column;gap:0;padding:18px;border-radius:8px;border:1px solid var(--line);transition:opacity .25s,border-color .25s}
+.br h3{font-size:16px;font-weight:600;display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.br h3 i{width:10px;height:10px;border-radius:50%}
+.br ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.br li{position:relative;padding:0 0 16px 26px;font-size:15px;line-height:1.4}
+.br li:last-child{padding-bottom:0}
+.br li::before{content:"";position:absolute;left:4px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--line-2)}
+.br li::after{content:"";position:absolute;left:9px;top:19px;bottom:2px;width:1.5px;background:var(--line)}
+.br li:last-child::after{display:none}
+.br li small{display:block;color:var(--muted);font-size:13.5px}
+.reasons{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.reasons span{font-size:12.5px;padding:4px 8px;border-radius:4px;background:var(--paper);color:var(--ink-2)}
+.dflow[data-pick="agree"] .br.ag,.dflow[data-pick="disagree"] .br.dg{border-color:var(--accent);box-shadow:0 10px 30px -24px rgba(230,95,46,.6)}
+.dflow[data-pick="agree"] .br.ag li::before,.dflow[data-pick="disagree"] .br.dg li::before{border-color:var(--accent);background:var(--accent)}
+.dflow[data-pick="agree"] .br.dg,.dflow[data-pick="disagree"] .br.ag{opacity:.38}
+.dmerge{text-align:center;padding:12px;border-radius:8px;background:var(--ink);color:#fff;font-weight:600;font-size:15px}
+
+/* V9 guardrails */
+.guard{padding:24px;border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;gap:20px}
+.scale{position:relative;height:56px}
+.scale .track{position:absolute;left:0;right:0;top:22px;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--crit-soft),var(--accent-soft) 38%,var(--accent-soft) 62%,var(--warn-soft))}
+.scale .zone{position:absolute;left:38%;right:38%;top:16px;height:22px;border:2px solid var(--accent);border-radius:6px}
+.scale .end{position:absolute;top:44px;font:500 12px/1.2 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.scale .end.l{left:0}.scale .end.r{right:0;text-align:right}
+.scale .mid{position:absolute;top:-2px;left:0;right:0;text-align:center;font:600 12.5px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent-deep)}
+.gcols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:10px}
+.gcol{display:flex;flex-direction:column;gap:10px}
+.gcol h3{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
+.gcol h3 .arr{font-family:var(--f-mono);color:var(--accent)}
+.g{padding:14px 16px;border-radius:8px;background:var(--paper);display:flex;flex-direction:column;gap:3px}
+.g b{font-size:15.5px;line-height:1.3}
+.g p{font-size:14px;color:var(--ink-2)}
+
+/* V10 loop */
+.loopwrap{display:grid;grid-template-columns:minmax(0,500px) minmax(0,1fr);gap:32px;align-items:center;padding:24px;border:1px solid var(--line);border-radius:var(--r)}
+.loopsvg{width:100%;height:auto;display:block}
+.loopsvg .node{cursor:pointer}
+.loopsvg .node circle{fill:var(--bg);stroke:var(--line-2);stroke-width:1.5;transition:fill .2s,stroke .2s}
+.loopsvg .node.on circle,.loopsvg .node:focus-visible circle{fill:var(--accent);stroke:var(--accent)}
+.loopsvg .node text{font:600 11px var(--f-mono);fill:var(--ink-2);letter-spacing:.04em}
+.loopsvg .node.on text.n{fill:#fff}
+.loopsvg .node:focus{outline:none}
+.loopsvg .ring{fill:none;stroke:var(--line);stroke-width:2}
+.loopsvg .flow{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-dasharray:28 520;stroke-linecap:round;animation:spin 6s linear infinite}
+@keyframes spin{to{stroke-dashoffset:-548}}
+.loopsvg .lab{font:600 13px var(--f-body);fill:var(--ink)}
+.loopsvg .ctr{font:600 15px var(--f-display);fill:var(--accent-deep)}
+.loop-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.loop-list li{padding:12px 14px;border-radius:8px;display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 10px;transition:background .2s}
+.loop-list li.on{background:var(--accent-soft)}
+.loop-list .n{font:600 12px/1.6 var(--f-mono);color:var(--accent-deep)}
+.loop-list b{font-size:15.5px}
+.loop-list small{grid-column:2;font:500 13px/1.4 var(--f-mono);color:var(--ink-2)}
+
+/* V11 architecture */
+.arch{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:4px}
+.lay{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 16px;border-radius:7px;background:var(--paper);font-size:15.5px;font-weight:600}
+.lay small{font:500 12px/1 var(--f-mono);color:var(--muted);letter-spacing:.03em;text-align:right}
+.lay:hover{background:var(--paper-2)}
+.lay[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.lay:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+.lay.mine{background:var(--accent);color:#fff;padding-block:16px;font-size:17px}
+.lay.mine small{color:rgba(50,64,79,.14)}
+.lay.gap{box-shadow:inset 3px 0 0 var(--warn)}
+.arch-side{position:sticky;top:24px;padding:20px;border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;gap:10px;min-width:0}
+.arch-side h3{font-size:18px;font-weight:600}
+.arch-side p{font-size:15px;color:var(--ink-2)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13.5px;color:var(--ink-2)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{width:14px;height:10px;border-radius:2px}
+
+/* V12 dependency */
+.dep{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;counter-reset:d}
+.dep li{list-style:none;position:relative;padding:44px 14px 0 0;display:flex;flex-direction:column;gap:6px;min-width:0}
+.dep li::before{counter-increment:d;content:counter(d);position:absolute;top:0;left:0;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:600 13px/1 var(--f-mono);background:var(--bg);border:1.5px solid var(--line-2);color:var(--ink-2);z-index:1}
+.dep li::after{content:"";position:absolute;top:15px;left:30px;right:0;height:1.5px;background:var(--line-2)}
+.dep li:last-child::after{display:none}
+.dep li.who-ml::before{border-color:var(--ink-2);background:var(--ink-2);color:#fff}
+.dep li.done::before{background:var(--accent);border-color:var(--accent);color:#fff}
+.dep .w{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.dep b{font-size:15px;line-height:1.3}
+.dep p{font-size:13.5px;color:var(--ink-2);line-height:1.45}
+.dep-out{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.dep-out div{padding:18px;border-radius:8px;display:flex;flex-direction:column;gap:6px}
+.dep-out .bad{background:var(--paper);border:1px dashed var(--line-2)}
+.dep-out .good{background:var(--accent-soft);border:1px solid var(--accent-line)}
+.dep-out b{font-size:16px}
+.dep-out p{font-size:14.5px;color:var(--ink-2)}
+
+/* V13 collaboration */
+.collab{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.hub{grid-column:2;grid-row:2;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:4px;padding:20px;border-radius:var(--r);background:var(--ink);color:#fff}
+.hub b{font:600 19px/1.2 var(--f-display);color:#fff}
+.hub small{font-size:13.5px;color:#c7c7c9}
+.cp{padding:18px;border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;gap:8px;min-width:0;transition:border-color .2s,background .2s}
+.cp:hover,.cp:focus-within{border-color:var(--accent-line);background:var(--accent-soft)}
+.cp h3{font-size:16.5px;font-weight:600}
+.cp p{font-size:14px;color:var(--ink-2);line-height:1.45}
+.cp .own{font:500 11.5px/1.3 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--accent-deep)}
+
+/* Screens gallery */
+.gal{display:flex;flex-direction:column;gap:16px}
+.gtabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.gtab{all:unset;box-sizing:border-box;cursor:pointer;white-space:nowrap;padding:9px 14px;border-radius:999px;border:1px solid var(--line);font-weight:600;font-size:14px;color:var(--ink-2);min-height:40px;display:inline-flex;align-items:center;gap:8px}
+.gtab small{font:500 11px/1 var(--f-mono);color:var(--warn);letter-spacing:.04em;text-transform:uppercase}
+.gtab:hover{border-color:var(--accent-line)}
+.gtab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.gtab[aria-selected="true"] small{color:#b6b6b8}
+.gtab:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+.gview{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:24px;align-items:start}
+.ginfo{display:flex;flex-direction:column;gap:12px;padding-top:4px}
+.ginfo .qq{font:600 22px/1.25 var(--f-display)}
+.ginfo p{font-size:15px;color:var(--ink-2)}
+.ginfo .nav{display:flex;gap:8px;margin-top:6px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--bg);font-weight:600;font-size:14.5px;cursor:pointer;text-decoration:none;color:var(--ink);min-height:42px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-deep)}
+.concept{align-self:flex-start;font:500 11.5px/1 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--warn);background:var(--warn-soft);padding:6px 8px;border-radius:4px}
+
+/* V14 testing */
+.tests{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:24px;align-items:start}
+.tlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;counter-reset:t}
+.tbtn{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:grid;grid-template-columns:34px minmax(0,1fr);gap:4px 12px;padding:12px 14px;border-radius:8px}
+.tbtn::before{counter-increment:t;content:counter(t);grid-row:span 2;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:600 12.5px/1 var(--f-mono);border:1.5px solid var(--line-2);color:var(--ink-2)}
+.tbtn b{font-size:15.5px;line-height:1.3}
+.tbtn small{font:500 12px/1.3 var(--f-mono);color:var(--muted);letter-spacing:.02em}
+.tbtn:hover{background:var(--paper)}
+.tbtn[aria-selected="true"]{background:var(--accent-soft)}
+.tbtn[aria-selected="true"]::before{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:focus-visible{outline:2.5px solid var(--accent);outline-offset:-2px}
+.tview{display:flex;flex-direction:column;gap:12px;position:sticky;top:24px}
+.tview .val{font-size:15px;color:var(--ink-2)}
+.tview .val b{color:var(--ink)}
+.protos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.proto{padding:20px;border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;gap:10px}
+.proto h3{font-size:18px;font-weight:600}
+.proto .for{font:500 12px/1.3 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--accent-deep)}
+.proto ul{margin:0;padding-left:18px;font-size:14.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:3px}
+.proto code{font:500 13px/1.5 var(--f-mono);color:var(--ink);background:var(--paper);padding:2px 6px;border-radius:4px}
+.iter{display:grid;grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr);gap:12px;align-items:stretch}
+.iter div{padding:18px;border-radius:8px;display:flex;flex-direction:column;gap:6px}
+.iter .b4{background:var(--paper)}
+.iter .af{background:var(--accent-soft)}
+.iter .arw{display:grid;place-items:center;font:600 20px/1 var(--f-mono);color:var(--accent);padding:0}
+.iter b{font-size:16px}
+.iter p{font-size:14.5px;color:var(--ink-2)}
+
+/* V15 edges */
+.edges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.edge{display:flex;flex-direction:column;gap:10px;min-width:0}
+.edge .thumb{border-radius:8px;overflow:hidden;border:1px solid var(--line-2);background:#121214;aspect-ratio:562/312}
+.edge .thumb img{display:block;width:100%;height:100%;object-fit:contain}
+.edge b{font-size:15.5px;line-height:1.3}
+.edge p{font-size:14px;color:var(--ink-2)}
+
+/* V16 handoff */
+.handoffs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ho{padding:18px;background:var(--paper);border-radius:var(--r);display:flex;flex-direction:column;gap:10px;min-width:0}
+.ho h3{font:500 12px/1.2 var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--accent-deep)}
+.ho ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.ho li{font-size:14.5px;display:flex;gap:8px;line-height:1.35}
+.ho li::before{content:"";flex:none;width:12px;height:7px;margin-top:6px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg) translate(1px,-2px)}
+.qa-line{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:16px 18px;border:1px solid var(--line);border-radius:var(--r);font-size:15px}
+
+/* Results + learnings */
+.results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.res{padding:22px;border:1px solid var(--line);border-radius:var(--r);display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 18px;align-items:start}
+.res .v{grid-row:span 3;font:600 40px/1 var(--f-display);color:var(--accent-deep);letter-spacing:-.02em;min-width:96px}
+.res b{font-size:16.5px}
+.res p{font-size:14.5px;color:var(--ink-2)}
+.res .credit{font:500 12px/1.4 var(--f-mono);color:var(--muted)}
+.learn{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border-top:1px solid var(--line)}
+.learn div{padding:22px 24px 22px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.learn div:nth-child(even){padding-left:24px;border-left:1px solid var(--line)}
+.learn b{font:600 19px/1.3 var(--f-display)}
+.learn p{font-size:15px;color:var(--ink-2)}
+footer{margin-top:96px;padding-top:24px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+/* sr-only */
+.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1100px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:0;padding-inline:24px}
+  .toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(8px);padding-block:10px;margin-inline:-24px;padding-inline:24px;border-bottom:1px solid var(--line);max-height:none}
+  .toc .back{display:none}
+  .toc ol{flex-direction:row;overflow-x:auto;gap:4px;scrollbar-width:none}
+  .toc a{border-left:0;border-bottom:2px solid transparent;white-space:nowrap;padding:6px 10px}
+  .toc a[aria-current="true"]{border-bottom-color:var(--accent)}
+  html{scroll-padding-top:70px}
+  .flowmap{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .handoffs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dep{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:24px}
+  .dep li:nth-child(3)::after{display:none}
+}
+@media (max-width:860px){
+  body{font-size:16.5px}
+  section.s{padding-top:80px}
+  .meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .meta div:nth-child(3){padding-left:0;border-left:0}
+  .meta div:nth-child(n+3){border-top:1px solid var(--line)}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .qw{grid-template-columns:minmax(0,1fr);padding:18px}
+  .qgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .funnel{grid-template-columns:minmax(0,1fr)}
+  .funnel div+div{border-left:0;border-top:1px solid var(--line)}
+  .users,.saydid,.branches,.gcols,.opts2,.protos,.results,.learn,.dep-out{grid-template-columns:minmax(0,1fr)}
+  .learn div:nth-child(even){padding-left:0;border-left:0}
+  .fm-view,.dlog,.arch,.loopwrap,.gview,.tests{grid-template-columns:minmax(0,1fr)}
+  .tview,.arch-side{position:static}
+  .dtabs{flex-direction:row;overflow-x:auto}
+  .dtab{white-space:nowrap}
+  .auth{grid-template-columns:minmax(0,1fr);padding:16px}
+  .auth .lane-l{margin-top:6px}
+  .auth .ghost{display:none}
+  .handoff{grid-column:1}
+  .layer .body{padding:0 16px 16px;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .layer>button{grid-template-columns:64px minmax(0,1fr);padding:14px 16px}
+  .layer .dens{display:none}
+  .layer:nth-child(2),.layer:nth-child(3){margin-left:0}
+  .collab{grid-template-columns:minmax(0,1fr)}
+  .hub{grid-column:auto;grid-row:auto;order:-1}
+  .edges{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .iter{grid-template-columns:minmax(0,1fr)}
+  .iter .arw{height:24px}.iter .arw span{display:none}.iter .arw::after{content:"↓"}
+  .why{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:520px){
+  .shell{padding-inline:16px}
+  .toc{margin-inline:-16px;padding-inline:16px}
+  .stats,.qgrid,.edges,.handoffs{grid-template-columns:minmax(0,1fr)}
+  .flowmap{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dep{grid-template-columns:minmax(0,1fr)}
+  .dep li{padding:0 0 0 44px}
+  .dep li::after{top:30px;left:15px;right:auto;bottom:-24px;width:1.5px;height:auto}
+  .dep li:nth-child(3)::after{display:block}
+  .dep li:last-child::after{display:none}
+  .layer .body{grid-template-columns:minmax(0,1fr)}
+  .res{grid-template-columns:minmax(0,1fr)}
+  .res .v{grid-row:auto}
+}
+
+/* ================= v2 additions: narrative, new visuals, IA canvas ================= */
+.intro{display:flex;flex-direction:column;gap:14px;max-width:680px;color:var(--ink-2);font-size:17.5px;line-height:1.65}
+.intro p b{color:var(--ink);font-weight:600}
+.chap{font:500 12.5px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-deep)}
+.vtag{display:inline-flex;align-items:center;gap:6px;font:500 11.5px/1 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;padding:5px 8px;border-radius:4px;color:var(--ink);background:var(--bg);border:1px solid var(--line-2);white-space:nowrap}
+.vtag::before{content:"◇";font-size:10px;color:var(--accent)}
+.tags{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.sub{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+.sub h3{font-size:22px;font-weight:600;line-height:1.25}
+.sub .intro{font-size:16.5px}
+.legend-bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:12px 16px;border:1px dashed var(--line-2);border-radius:var(--r);font-size:14px;color:var(--ink-2);margin-bottom:48px}
+.legend-bar b{color:var(--ink)}
+.pullq{font:500 italic 23px/1.4 var(--f-display);color:var(--ink);max-width:720px;padding-left:20px;border-left:3px solid var(--accent)}
+
+/* Context: three maintenance models */
+.models{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.model{padding:20px;border-radius:var(--r);border:1px solid var(--line);display:flex;flex-direction:column;gap:12px;min-width:0}
+.model h3{font-size:18px;font-weight:600}
+.model .steps2{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.model .steps2 li{font-size:14.5px;padding:7px 10px;border-radius:6px;background:var(--paper);position:relative}
+.model .steps2 li+li::before{content:"↓";position:absolute;left:-2px;top:-15px;font:600 11px/1 var(--f-mono);color:var(--muted);display:none}
+.model .cost{margin-top:auto;font-size:14px;color:var(--ink-2);padding-top:10px;border-top:1px solid var(--line)}
+.model .cost b{color:var(--crit)}
+.model.pred{border-color:var(--accent);box-shadow:0 14px 34px -26px rgba(230,95,46,.55)}
+.model.pred .steps2 li{background:var(--accent-soft)}
+.model.pred .steps2 li.me{background:var(--accent);color:#fff;font-weight:600}
+.model.pred .cost b{color:var(--accent-deep)}
+
+/* Reframe */
+.reframe{display:grid;grid-template-columns:minmax(0,1fr) 44px minmax(0,1.6fr);gap:12px;align-items:stretch}
+.reframe>div{padding:22px;border-radius:var(--r);display:flex;flex-direction:column;gap:10px}
+.reframe .from{background:var(--paper);border:1px dashed var(--line-2)}
+.reframe .from p{font:500 20px/1.35 var(--f-display);color:var(--ink-2);text-decoration:line-through;text-decoration-color:var(--line-2)}
+.reframe .to{background:var(--accent-soft);border:1px solid var(--accent-line)}
+.reframe .to p{font:600 20px/1.4 var(--f-display);color:var(--ink)}
+.reframe .to p em{font-style:normal;color:var(--accent-deep)}
+.reframe .arw{display:grid;place-items:center;font:600 22px/1 var(--f-mono);color:var(--accent);padding:0}
+
+/* Synthesis chain */
+.chain{display:flex;flex-wrap:wrap;gap:6px 0;align-items:center}
+.chain span{padding:9px 13px;border-radius:6px;background:var(--paper);font-size:14.5px;font-weight:600}
+.chain span:last-child{background:var(--accent);color:#fff}
+.chain i{width:20px;height:1.5px;background:var(--line-2);position:relative;margin:0 2px}
+.chain i::after{content:"";position:absolute;right:-1px;top:-3px;border:4px solid transparent;border-left:5px solid var(--line-2);border-right:0}
+
+/* Insights → principles */
+.goal{padding:22px 24px;border-radius:var(--r);background:var(--ink);color:#fff;display:flex;flex-direction:column;gap:8px}
+.goal .lbl{color:rgba(230,95,46,.4)}
+.goal p{font:500 19px/1.45 var(--f-display);color:#fff;max-width:880px}
+.imap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr);gap:10px 18px;align-items:start}
+.imap .colh{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding-bottom:4px}
+.icol{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ins{all:unset;box-sizing:border-box;cursor:pointer;padding:13px 14px;border-radius:8px;border:1px solid var(--line);display:flex;flex-direction:column;gap:4px;transition:border-color .2s,background .2s,opacity .2s}
+.ins b{font-size:15px;line-height:1.3}
+.ins small{font-size:13.5px;color:var(--ink-2);line-height:1.4}
+.ins .n{font:500 11px/1 var(--f-mono);color:var(--muted);letter-spacing:.04em}
+.ins:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+.pr,.wh{padding:12px 14px;border-radius:8px;background:var(--paper);font-size:14.5px;line-height:1.35;transition:background .2s,opacity .2s,color .2s}
+.pr .n{font:500 11px/1 var(--f-mono);color:var(--muted);display:block;margin-bottom:3px}
+.wh{font-weight:600}
+.imap[data-on] .ins,.imap[data-on] .pr,.imap[data-on] .wh{opacity:.38}
+.imap[data-on] .on{opacity:1}
+.imap[data-on] .ins.on{border-color:var(--accent);background:var(--accent-soft)}
+.imap[data-on] .pr.on,.imap[data-on] .wh.on{background:var(--accent);color:#fff}
+.imap[data-on] .pr.on .n{color:rgba(50,64,79,.14)}
+
+/* Tension: speed vs depth */
+.tension{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tension>div{padding:18px 20px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tension .pole{background:var(--paper)}
+.tension .mid{background:var(--accent-soft);border-inline:1px solid var(--accent-line);text-align:center;align-items:center;justify-content:center}
+.tension b{font-size:16px}
+.tension p{font-size:14px;color:var(--ink-2)}
+.tension .mid b{color:var(--accent-deep);font-size:18px}
+
+/* Patterns over time */
+.ptime{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;padding:24px;border:1px solid var(--line);border-radius:var(--r)}
+.ptime li{list-style:none;position:relative;padding:40px 12px 0 0;display:flex;flex-direction:column;gap:5px;min-width:0}
+.ptime li::before{content:"";position:absolute;top:8px;left:0;width:16px;height:16px;border-radius:50%;background:var(--bg);border:3px solid var(--c);z-index:1}
+.ptime li::after{content:"";position:absolute;top:15px;left:16px;right:0;height:2px;background:var(--line)}
+.ptime li:last-child::after{display:none}
+.ptime li.pred::before{background:var(--c)}
+.ptime .w{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ptime b{font-size:15px;line-height:1.3}
+.ptime .bars{display:flex;gap:2px;align-items:flex-end;height:28px;margin-top:4px}
+.ptime .bars i{width:5px;border-radius:1px;background:var(--c);opacity:.7}
+.ptq{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ptq div{padding:14px;border-radius:8px;background:var(--paper);font-size:14.5px;font-weight:600;line-height:1.35}
+
+/* Context preservation note */
+.carryover{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px 16px;border-radius:8px;background:var(--accent-soft);font-size:14.5px}
+.carryover b{margin-right:4px}
+.carryover span{font:500 13px/1 var(--f-mono);padding:6px 9px;border-radius:4px;background:var(--bg);border:1px solid var(--accent-line)}
+
+/* IA canvas */
+.canvas{position:relative;height:560px;border:1px solid var(--line-2);border-radius:var(--r);overflow:hidden;background-color:var(--paper);background-image:radial-gradient(circle,#cdd8d7 1px,transparent 1.2px);background-size:22px 22px;cursor:grab;touch-action:none;outline:none}
+.canvas:focus-visible{box-shadow:0 0 0 3px var(--accent)}
+.canvas.drag{cursor:grabbing}
+.canvas svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.canvas .ctrl{position:absolute;right:12px;top:12px;display:flex;gap:4px;padding:4px;border-radius:8px;background:var(--bg);border:1px solid var(--line);box-shadow:0 4px 14px -8px rgba(0,0,0,.25)}
+.canvas .ctrl button{border:0;background:transparent;min-width:36px;height:36px;border-radius:6px;font:600 16px/1 var(--f-mono);color:var(--ink);cursor:pointer;padding:0 8px}
+.canvas .ctrl button:hover{background:var(--paper)}
+.canvas .ctrl .z{font:500 12px/36px var(--f-mono);color:var(--muted);min-width:46px;text-align:center}
+.canvas .hint{position:absolute;left:12px;bottom:12px;font:500 12px/1.3 var(--f-mono);color:var(--muted);background:var(--bg);padding:6px 9px;border-radius:6px;border:1px solid var(--line)}
+.ia-root rect{fill:var(--ink)} .ia-root text{fill:#fff;font:600 17px var(--f-display)}
+.ia-glob rect{fill:var(--bg);stroke:var(--line-2);stroke-dasharray:4 3} .ia-glob text{fill:var(--ink-2);font:500 12.5px var(--f-mono)}
+.ia-nav rect{fill:var(--accent)} .ia-nav text{fill:#fff;font:600 15px var(--f-display)}
+.ia-nav.off rect{fill:var(--bg);stroke:var(--line-2);stroke-dasharray:5 4} .ia-nav.off text{fill:var(--muted)}
+.ia-item rect{fill:var(--bg);stroke:var(--line-2)} .ia-item text{fill:var(--ink);font:500 13px var(--f-body)}
+.ia-item.l2 rect{fill:var(--paper);stroke:var(--line)} .ia-item.l2 text{fill:var(--ink-2);font-size:12.5px}
+.ia-item.key rect{stroke:var(--accent);stroke-width:1.6}
+.ia-ext rect{fill:var(--warn-soft);stroke:var(--warn)} .ia-ext text{fill:var(--warn);font:600 13px var(--f-body)}
+.ia-tree{fill:none;stroke:var(--line-2);stroke-width:1.4}
+.ia-link{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-dasharray:6 4}
+.ia-lab{font:500 11.5px var(--f-mono);fill:var(--accent-deep)}
+.ia-leg text{font:500 12px var(--f-mono);fill:var(--ink-2)}
+
+@media (max-width:1100px){
+  .imap{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .imap .wcol{display:none}
+  .ptime{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:22px}
+  .ptime li:nth-child(3)::after{display:none}
+}
+@media (max-width:860px){
+  .models,.reframe,.tension,.ptq{grid-template-columns:minmax(0,1fr)}
+  .reframe .arw{height:28px}
+  .reframe .arw span{display:none}
+  .reframe .arw::after{content:"↓"}
+  .tension .mid{border-inline:0;border-block:1px solid var(--accent-line)}
+  .imap{grid-template-columns:minmax(0,1fr)}
+  .imap .pcol .colh{margin-top:8px}
+  .canvas{height:460px}
+  .intro{font-size:16.5px}
+  .pullq{font-size:20px}
+}
+@media (max-width:520px){
+  .ptime{grid-template-columns:minmax(0,1fr);padding:18px}
+  .ptime li{padding:0 0 0 30px}
+  .ptime li::before{top:2px}
+  .ptime li::after{top:22px;left:7px;right:auto;bottom:-24px;width:2px;height:auto}
+  .ptime li:nth-child(3)::after{display:block}
+  .ptime li:last-child::after{display:none}
+  .canvas{height:420px}
+}
+
+/* 30-second story + AI decision model + tasks */
+.story{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-radius:var(--r);background:var(--accent-soft);border:1px solid var(--accent-line);overflow:hidden}
+.story>div{padding:24px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.story>div+div{border-left:1px solid var(--accent-line)}
+.story .lbl{color:var(--accent-deep)}
+.story p{font:500 19px/1.45 var(--f-display);color:var(--ink)}
+.story p b{color:var(--accent-deep);font-weight:600}
+.contract{display:grid;grid-template-columns:minmax(0,1fr) 36px minmax(0,1fr) minmax(0,1.1fr);gap:12px;align-items:stretch}
+.ct-col{padding:20px;border-radius:var(--r);display:flex;flex-direction:column;gap:10px;min-width:0}
+.ct-col ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.ct-col li{font-size:15px;line-height:1.4;padding-left:16px;position:relative}
+.ct-col li::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55}
+.ct-col.m{background:var(--paper);border:1px solid var(--line)}
+.ct-col.h{background:var(--accent-soft);border:1px solid var(--accent-line)}
+.ct-col.h .lbl{color:var(--accent-deep)}
+.ct-col.g{background:var(--ink);color:#fff}
+.ct-col.g .lbl{color:rgba(230,95,46,.4)}
+.ct-col.g li::before{background:rgba(230,95,46,.4);opacity:1}
+.ct-arrow{display:grid;place-items:center;font:600 20px/1 var(--f-mono);color:var(--accent)}
+.tstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.tstats div{padding:20px;background:var(--paper);border-radius:var(--r);display:flex;flex-direction:column;gap:6px}
+.tstats .v{font:600 38px/1 var(--f-display);color:var(--accent-deep)}
+.tstats span:not(.v){font-size:14.5px;color:var(--ink-2)}
+.tasks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;counter-reset:tk}
+.tasks li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:4px 12px;padding:16px;border:1px solid var(--line);border-radius:var(--r);min-width:0}
+.tasks li::before{counter-increment:tk;content:counter(tk);grid-row:span 3;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:600 12.5px/1 var(--f-mono);background:var(--accent);color:#fff}
+.tasks b{font-size:15.5px;line-height:1.35}
+.tasks small{font:500 12px/1.3 var(--f-mono);color:var(--accent-deep);letter-spacing:.02em}
+.tasks p{font-size:14px;color:var(--ink-2)}
+@media (max-width:860px){
+  .story,.contract,.tstats,.tasks{grid-template-columns:minmax(0,1fr)}
+  .story>div+div{border-left:0;border-top:1px solid var(--accent-line)}
+  .story p{font-size:17.5px}
+  .ct-arrow{height:24px}.ct-arrow span{display:none}.ct-arrow::after{content:"↓"}
+}
+
+/* TLDR block above hero */
+.tldr{border:1.5px solid var(--line-2);border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:24px;margin-bottom:72px;background:var(--bg);box-shadow:0 20px 50px -38px rgba(64,64,66,.45)}
+.tldr-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.tldr .s-head h2{font-size:clamp(26px,2.8vw,34px)}
+.readpill{display:inline-flex;align-items:center;gap:10px;padding:12px 20px;border-radius:999px;background:var(--accent);color:#fff;font-size:16px;box-shadow:0 8px 20px -10px rgba(230,95,46,.7)}
+.readpill svg{width:20px;height:20px}
+.readpill b{font:600 18px/1 var(--f-display)}
+.aiflow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) 30px repeat(3,minmax(0,1fr));gap:10px;align-items:stretch}
+.af{padding:16px;border-radius:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.af .who{font:500 11px/1 var(--f-mono);letter-spacing:.07em;text-transform:uppercase}
+.af b{font:600 18px/1.2 var(--f-display)}
+.af p{font-size:14px;line-height:1.45;color:var(--ink-2)}
+.af.m{background:var(--paper);border:1px solid var(--line)} .af.m .who{color:var(--muted)}
+.af.h{background:var(--accent-soft);border:1px solid var(--accent-line)} .af.h .who{color:var(--accent-deep)}
+.af.s{background:var(--ink);color:#fff} .af.s .who{color:rgba(230,95,46,.4)} .af.s p{color:#dcdcde}
+.af-br{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.af-br span{font-size:13px;line-height:1.35;padding:6px 8px;border-radius:6px;background:var(--bg)}
+.af-br .y{border-left:3px solid var(--accent)} .af-br .n{border-left:3px solid var(--ink-2)}
+.af-hand{position:relative;display:flex;justify-content:center}
+.af-hand::before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed var(--accent)}
+.af-hand span{position:relative;writing-mode:vertical-rl;transform:rotate(180deg);background:var(--bg);padding:8px 0;font:600 11px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent-deep);align-self:center}
+.guar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;border-radius:10px;border:1px dashed var(--accent-line)}
+.guar span:not(.lbl){font-size:14px;font-weight:600;padding:6px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent-deep)}
+.guar .lbl{margin-right:4px}
+@media (max-width:1100px){.aiflow{grid-template-columns:repeat(2,minmax(0,1fr))}.af-hand{grid-column:1/-1;height:34px}.af-hand::before{top:50%;bottom:auto;left:0;right:0;border-left:0;border-top:2px dashed var(--accent)}.af-hand span{writing-mode:horizontal-tb;transform:none;padding:0 10px}.af.s{grid-column:1/-1}}
+@media (max-width:860px){.tldr{padding:20px}}
+@media (max-width:520px){.aiflow{grid-template-columns:minmax(0,1fr)}.readpill{width:100%;justify-content:center}}
+
+.readpill{border-radius:8px}
+.tldr-foot{display:flex;justify-content:center;padding-top:4px}
+.readmore{display:inline-flex;align-items:center;gap:10px;padding:12px 20px;border-radius:8px;border:1.5px solid var(--accent);color:var(--accent-deep);text-decoration:none;font-size:16px;background:var(--bg);min-height:48px;transition:background .2s}
+.readmore:hover{background:var(--accent-soft)}
+.readmore svg{width:20px;height:20px}
+.readmore b{font:600 18px/1 var(--f-display)}
+@media (max-width:520px){.readmore{width:100%;justify-content:center}}
+
+.vtag,.src{white-space:normal;max-width:100%;line-height:1.3}
+
+.pills{display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.pills .readpill,.pills .readmore{justify-content:center}
+@media (max-width:520px){.pills{width:100%}}
+
+/* ===== Kalyan's CraftRoom design system ===== */
+html{scroll-padding-top:28px}
+body{background:var(--bg);color:var(--ink-2);font:400 17px/1.65 var(--f-body)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;mix-blend-mode:multiply;background-image:url(data:image/png;base64,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);background-size:240px 240px;z-index:50}
+b,strong{font-weight:500;color:var(--ink)}
+.shell{display:block;max-width:none;padding:0}
+main{margin-left:252px;padding:120px 28px 160px}
+.col{max-width:1040px;margin:0 auto}.text{max-width:700px}
+.topbar::before{content:'';position:fixed;left:0;right:0;top:0;height:76px;background:linear-gradient(var(--bg) 55%,transparent);z-index:-1;pointer-events:none}.topbar{position:fixed;left:28px;top:26px;z-index:20;display:flex;gap:10px;align-items:center;font-size:16px;line-height:24px;color:var(--muted)}
+.topbar a{color:var(--muted);text-decoration:none;transition:color .2s}.topbar a:hover{color:var(--accent)}.topbar b{font-weight:400;color:var(--ink)}
+.topbar .protolink{position:fixed;right:28px;top:26px;color:var(--accent);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px}
+.toc{position:fixed;left:12px;top:50%;transform:translateY(-50%);padding:0;max-height:78vh;width:228px;z-index:10}
+.toc-top{display:none}
+.toc ol{gap:1px}
+.toc a{display:flex;align-items:center;gap:9px;padding:3px 0;border:0;font-size:15px;line-height:1.5;color:var(--muted);transition:color .2s;font-weight:400}
+.toc a::before{content:"";width:5px;height:5px;background:var(--accent);opacity:0;flex:none;transition:opacity .2s}
+.toc a:hover{color:var(--accent)}
+.toc a[aria-current="true"]{color:var(--accent);border:0;font-weight:400}.toc a[aria-current="true"]::before{opacity:1}
+h1,h2{font-family:var(--f-display)!important;font-weight:400!important;color:var(--ink)}
+h3,h4{font-family:var(--f-body);font-weight:500;color:var(--ink)}
+.hero h1{font-size:clamp(34px,4.4vw,54px);line-height:1.12;letter-spacing:-.02em;max-width:19ch}
+.s-head h2{font-size:clamp(28px,3vw,40px);line-height:1.18;letter-spacing:-.015em;max-width:26ch}
+em.k{font-style:normal;color:var(--accent);background:rgba(230,95,46,.1);padding:0 .14em;margin:0 -.04em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.eyebrow,.chap,.lbl,.vtag,.src{font-family:var(--f-body)!important;font-size:15px!important;line-height:1.4!important;letter-spacing:0!important;text-transform:none!important;font-weight:400!important;color:var(--muted)!important;background:none!important;padding:0!important}
+.vtag::before,.src::before{display:none!important}.vtag,.readpill,.tldr{border:0!important}.tldr,.stat,.story,.q,.oldcard,.readpill,.readmore,.panel,.paper,.card{border-radius:0!important;box-shadow:none!important}.tldr{padding:0!important;background:none!important}.readpill,.readmore{display:none!important}
+.hero .lede,.intro p,.s-head p{font-size:18px;line-height:1.6;color:var(--ink-2)}
+.hero{gap:26px}
+.herovid{margin:0 0 24px;background:#e6e8ec;line-height:0;overflow:hidden}
+.herovid video{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.meta{border-color:var(--line)}
+.meta b{font-weight:400;color:var(--ink);font-size:16.5px}
+.stat,.paper,.panel{border-radius:0}
+.stat .v{font-family:var(--f-display);font-weight:400;color:var(--ink)}
+.shot{border-radius:0;box-shadow:none;border:1px solid var(--line-2)}
+.cap{font-size:14.5px;color:var(--muted)}
+.btn,.btn.primary,.protobtn{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;color:var(--ink)!important;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:1.5px;text-underline-offset:6px;font-weight:400!important;font-size:17px}
+.btn:hover,.protobtn:hover{color:var(--accent)!important}
+.herolinks{display:flex;gap:26px}
+section.s{padding-top:140px}.tldr{margin-top:120px}.story{background:var(--paper)!important;border:0!important}.story>div{border-color:var(--line)!important}
+@media(max-width:1100px){.toc{display:none}main{margin-left:0;padding:96px 20px 120px}.topbar{left:20px}.topbar .protolink{right:20px}}
+@media(max-width:520px){main{padding:88px 16px 100px}.hero h1{font-size:34px}}
+
+/* ---- final rules: sharp edges, orange = stroke / marker only ---- */
+:root{--accent-soft:rgba(50,64,79,.07);--crit:#5c6877;--crit-soft:#e4e6e9;--warn:#5c6877;--warn-soft:#e4e6e9;--ok:#5c6877;--ok-soft:#e4e6e9}
+*,*::before,*::after{border-radius:0!important}
+section.tldr{background:rgba(50,64,79,.09)!important;padding:44px!important;margin-top:120px}
+section.tldr .story{background:transparent!important}
+.btn,.protobtn,.chip,.pill,.tag,.badge{box-shadow:none!important}
+em.k{background:rgba(230,95,46,.1)!important}
+:root{--accent-deep:#e65f2e!important}
+/* one orange everywhere */
+.toc a[aria-current="true"],.auto-row::before,.handoff{color:#e65f2e!important}
+/* orange never sits on dark: lighten labels on dark / orange fills */
+.hub,.hub *,.goal,.goal *,.ct-col.g,.ct-col.g *,.af.s,.af.s *,.dmerge,.gate-out .log,.gate-out .log *,.bp .stage[aria-pressed="true"],.bp .stage[aria-pressed="true"] *,.gtab[aria-selected="true"],.gate-btns .btn[aria-pressed="true"]{color:#fff!important}
+.hub .lbl,.goal .lbl,.ct-col.g .lbl,.af.s .who,.af.s .lbl,.hub small,.goal small{color:rgba(255,255,255,.7)!important}
+.imap[data-on] .pr.on,.imap[data-on] .wh.on,.imap[data-on] .pr.on *,.imap[data-on] .wh.on *{color:#fff!important}
+.imap[data-on] .pr.on .n{color:rgba(255,255,255,.8)!important}
+/* no side strips; full single hairline boxes with padding instead */
+.pullq{border-left:0!important;padding:20px 24px!important;border:1px solid var(--accent)!important}
+.af-br span{padding:8px 12px!important;border-left:0!important;border:1px solid var(--line-2)!important;background:transparent!important}
+.af-br .y{border-color:var(--accent)!important}
+.lay.gap{box-shadow:none!important;border:1px solid var(--accent)!important}
+.af-hand span{background:var(--bg)!important;padding:18px 14px!important}
+.handoff{padding:0!important;background:none!important}
+/* single thin strokes (no doubles, no thick rings) */
+.ao[aria-pressed="true"],.fs[aria-pressed="true"]{box-shadow:none!important;border:1px solid var(--accent)!important}
+.astep[aria-pressed="true"],.lay[aria-pressed="true"]{outline:0!important;border-color:var(--accent)!important;box-shadow:inset 0 0 0 1px var(--accent)!important}
+:focus-visible{outline:1px solid var(--accent)!important;outline-offset:3px!important}
+.canvas:focus-visible,.zc:focus-visible{box-shadow:none!important}
+.scale .zone,.bp .cell.ai-core,.bp .stage.ai-stage{border-width:1px!important;box-shadow:none!important}
+.frag-stage .ws{border-width:1px!important}
+.af-hand::before,.authl .mid::before{border-left-width:1px!important}
+@media(max-width:520px){section.tldr{padding:24px 18px!important}}
+</style>
+
+</head>
+<body>
+<div class="topbar"><a href="../../index.html#work">&larr; Work</a><span>/</span><b>Siemens PMIP</b><a class="protolink" href="prototype.html" target="_blank" rel="noopener">Live prototype ↗</a></div>
+<div class="shell">
+  <nav class="toc" aria-label="Case study sections">
+    <a class="back" href="../../index.html#work">← All projects</a>
+    <ol>
+      <li><a href="#story">30-second story</a></li>
+      <li><a href="#context">Context</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#research">Research</a></li>
+      <li><a href="#insights">Insights</a></li>
+      <li><a href="#structure">Flow &amp; structure</a></li>
+      <li><a href="#depth">Speed vs depth</a></li>
+      <li><a href="#time">Patterns over time</a></li>
+      <li><a href="#decisions">Decision log</a></li>
+      <li><a href="#human-ai">Human + AI</a></li>
+      <li><a href="#system">The system</a></li>
+      <li><a href="#screens">The screens</a></li>
+      <li><a href="#testing">Testing</a></li>
+      <li><a href="#shipping">Shipping</a></li>
+      <li><a href="#results">Results</a></li>
+    </ol>
+  </nav>
+
+  <main id="top">
+    <div class="col">
+
+      <!-- ============ 30-SECOND STORY (above hero) ============ -->
+      <header class="hero" id="hero">
+<div class="herovid"><video src="hero.mp4" muted loop playsinline autoplay preload="auto"></video></div>
+        <span class="eyebrow">Siemens · Predictive Maintenance Intelligence Platform</span>
+        <h1>The model could predict failures. <em class="k">Engineers still weren't acting.</em></h1>
+        <p class="lede">PMIP already had working machine-learning models. What it lacked was an experience that let experienced industrial engineers understand a prediction, check it against their own judgment, and act on it. That was my job.</p>
+        <div class="meta">
+          <div><span class="lbl">Role</span><b>Product Designer</b></div>
+          <div><span class="lbl">Timeline</span><b>Apr 2022 – Jul 2024</b></div>
+          <div><span class="lbl">Scope</span><b>Research synthesis to implementation QA</b></div>
+          <div><span class="lbl">Worked with</span><b>ML, data science, product, frontend, industrial engineers, QA</b></div>
+        </div>
+        <figure style="margin:8px 0 0">
+          <div class="shot"><div class="bar"><i></i><i></i><i></i></div><img data-img="overview" alt="PMIP operational overview: five status counts, the M-204 attention card, and the equipment health table ranked by time to failure." width="1280" height="800"></div>
+          <figcaption class="cap">Operational overview, rebuilt from the project documentation. Asset data other than Motor M-204 is illustrative.</figcaption>
+        </figure>
+      </header>
+<section class="tldr" id="story" aria-labelledby="h-story">
+        <div class="tldr-head">
+          <div class="s-head" style="gap:10px"><span class="chap">If you only read one thing</span><h2 id="h-story">The 30-second story</h2><div class="tags"><span class="vtag">Project summary + outcome metrics</span><span class="src doc">Documented</span></div></div>
+          <div class="pills"><span class="readpill"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.6V8l2.4 1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span><b>30 seconds</b></span></span><a class="readmore" href="#hero"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.6V8l2.4 1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span><b>15 min</b> full read</span><span aria-hidden="true">↓</span></a></div>
+        </div>
+        <div class="story">
+          <div><span class="lbl">The problem</span><p>PMIP's models could predict equipment failures, but engineers didn't trust or act on <b>a conclusion with no reasoning.</b></p></div>
+          <div><span class="lbl">What I did</span><p>Redesigned the experience around the engineer's decision: <b>summary, evidence and AI reasoning on request</b>, ending in a human decision.</p></div>
+          <div><span class="lbl">What changed</span><p>Engineers could <b>understand, check and act</b> on predictions, and every decision fed back to the ML team.</p></div>
+        </div>
+        <div class="stats">
+          <div class="stat"><span class="v num">28<small>%</small></span><b>Less equipment downtime</b><p>The models made the predictions. The experience helped operators act on them earlier.</p></div>
+          <div class="stat"><span class="v num">35<small>%</small></span><b>Better task completion</b><p>On complex energy-management tasks, after the research-driven redesign.</p></div>
+          <div class="stat"><span class="v num">50<small>%</small></span><b>Shorter approval cycles</b><p>Interactive prototypes and structured design sprints replaced slow reviews.</p></div>
+          <div class="stat"><span class="v num">6<small> wk</small></span><b>Faster feature deployment</b><p>Earlier alignment let engineering start sooner.</p></div>
+        </div>
+        <div class="sub" style="margin-top:8px">
+          <div class="tags"><span class="vtag">AI decision flow</span><span class="src mix">Doc + synthesis</span></div>
+          <h3>How every prediction moves: <em class="k">AI informs, people decide, the system learns.</em></h3>
+          <div class="aiflow" role="list">
+            <div class="af m" role="listitem"><span class="who">Model</span><b>Detects</b><p>Finds an anomaly in sensor data and predicts a failure.</p></div>
+            <div class="af m" role="listitem"><span class="who">Model</span><b>Explains</b><p>Summary, evidence, AI reasoning. Confidence always with its evidence and precedent.</p></div>
+            <div class="af-hand" aria-hidden="true"><span>Authority passes to the engineer</span></div>
+            <div class="af h" role="listitem"><span class="who">Engineer</span><b>Evaluates</b><p>Checks the evidence against their own experience.</p></div>
+            <div class="af h" role="listitem"><span class="who">Engineer</span><b>Decides</b>
+              <div class="af-br"><span class="y">Agree → maintenance, context carried over</span><span class="n">Disagree → reason → monitor or escalate</span></div></div>
+            <div class="af s" role="listitem"><span class="who">System</span><b>Learns</b><p>Outcomes and disagreements reach the product and ML teams.</p></div>
+          </div>
+          <div class="guar"><span class="lbl">Guarantees</span><span>The AI is never the final decision-maker</span><span>No confidence without evidence</span><span>Every disagreement is captured with a reason</span></div>
+        </div>
+      </section>
+
+      <!-- ============ HERO ============ -->
+      
+
+      <!-- ============ 01 CONTEXT ============ -->
+      <section class="s" id="context" aria-labelledby="h-context">
+        <div class="s-head"><span class="chap">01 · Context</span><h2 id="h-context">Maintenance was either too late <em class="k">or too early.</em></h2><div class="tags"><span class="vtag">Maintenance models comparison</span><span class="src doc">Documented</span></div></div>
+        <div class="intro">
+          <p>Siemens plants run motors, pumps, turbines, compressors and heat exchangers. Traditionally, they were maintained in one of two ways, and both cost money: waiting for a failure means unplanned downtime, and replacing parts on a calendar means replacing healthy parts.</p>
+          <p>PMIP was built to move maintenance to a third model, prediction. The intelligence already existed. The step that didn't work yet was the one in the middle: <b>an operator validating the prediction</b>. That is where my work sat.</p>
+        </div>
+        <div class="models">
+          <article class="model"><span class="lbl">Model 1</span><h3>Reactive</h3>
+            <ol class="steps2"><li>Equipment fails</li><li>Production is affected</li><li>Team investigates</li><li>Repair happens</li></ol>
+            <p class="cost"><b>Cost:</b> unplanned downtime.</p></article>
+          <article class="model"><span class="lbl">Model 2</span><h3>Scheduled preventive</h3>
+            <ol class="steps2"><li>A fixed interval is reached</li><li>Inspection or replacement happens</li><li>Whether the part needs it or not</li></ol>
+            <p class="cost"><b>Cost:</b> healthy parts replaced early, crews sent unnecessarily.</p></article>
+          <article class="model pred"><span class="lbl">Model 3 · PMIP</span><h3>Predictive</h3>
+            <ol class="steps2"><li>Equipment sensors</li><li>Operational data</li><li>Anomaly detection</li><li>Failure prediction</li><li class="me">Operator validation · my focus</li><li>Preventive maintenance</li></ol>
+            <p class="cost"><b>Goal:</b> fix what is about to fail, before it fails.</p></article>
+        </div>
+      </section>
+
+      <!-- ============ 02 PROBLEM ============ -->
+      <section class="s" id="problem" aria-labelledby="h-problem">
+        <div class="s-head"><span class="chap">02 · The problem</span><h2 id="h-problem">The alert gave a conclusion. <em class="k">Engineers needed the reasoning.</em></h2><div class="tags"><span class="vtag">Question wall · old alert vs PMIP</span><span class="src doc">Documented</span></div></div>
+        <div class="intro">
+          <p>When I joined, the models were working and generating predictions, but operators weren't consistently trusting or acting on them. An alert looked like the card below. For the machine, that's an output. For an engineer, it's where the investigation starts.</p>
+          <p>Switch to PMIP to see which of the engineer's nine questions the redesign answers, and where.</p>
+        </div>
+        <div class="qw panel" id="qw" data-mode="old">
+          <div class="qw-side">
+            <div class="oldcard" aria-label="The old alert">
+              <span class="t">ALERT</span><b>Motor M-204</b><span class="p">Bearing failure predicted</span><span class="sev">HIGH RISK</span>
+            </div>
+            <div class="seg" role="group" aria-label="Compare">
+              <button type="button" data-mode="old" aria-pressed="true">Old alert</button>
+              <button type="button" data-mode="new" aria-pressed="false">PMIP</button>
+            </div>
+            <p class="qw-count" aria-live="polite"><b id="qw-n">0</b> of 9 questions answered</p>
+          </div>
+          <div class="qgrid">
+            <div class="q"><span>Why?</span><small><span>Level 3 · AI reasoning</span></small></div>
+            <div class="q"><span>Which sensor changed?</span><small><span>Level 2 · Evidence</span></small></div>
+            <div class="q"><span>How abnormal is it?</span><small><span>Level 2 · 12.4 vs 2–8 mm/s</span></small></div>
+            <div class="q"><span>How long has it been abnormal?</span><small><span>Level 2 · 72 hours</span></small></div>
+            <div class="q"><span>Sudden spike or gradual?</span><small><span>Equipment health timeline</span></small></div>
+            <div class="q"><span>How confident is the model?</span><small><span>Level 1 + Level 3 · 87%</span></small></div>
+            <div class="q"><span>Which signals contributed most?</span><small><span>Level 3 · signal influence</span></small></div>
+            <div class="q"><span>Has this happened before?</span><small><span>Level 3 · 24 of 28 failed</span></small></div>
+            <div class="q"><span>What should I do?</span><small><span>Level 1 · Inspect bearing assembly</span></small></div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="tags"><span class="vtag">Problem reframe</span><span class="src doc">Documented</span></div>
+          <h3>I stopped asking how to display predictions.</h3>
+          <div class="intro"><p>The model might be accurate, but if an experienced engineer doesn't trust it enough to act, its value is limited. I called this the trust problem, and it changed the question the team was answering.</p></div>
+          <div class="reframe">
+            <div class="from"><span class="lbl">From</span><p>How do we display AI predictions?</p></div>
+            <div class="arw" aria-hidden="true"><span>→</span></div>
+            <div class="to"><span class="lbl">To</span><p>How might we help experienced industrial operators understand the <em>severity, evidence, reasoning and appropriate action</em> behind an AI-generated prediction, <em>without replacing their professional judgment?</em></p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 03 RESEARCH ============ -->
+      <section class="s" id="research" aria-labelledby="h-research">
+        <div class="s-head"><span class="chap">03 · Research</span><h2 id="h-research">We watched the work. <em class="k">Not just the interviews.</em></h2><div class="tags"><span class="vtag">Research funnel</span><span class="src doc">Documented</span></div></div>
+        <div class="intro">
+          <p>Industrial workflows are highly contextual, so I didn't want to redesign from dashboard conventions. Across the broader Siemens research program, we ran and synthesized <b>85+ contextual inquiry sessions</b>, watching engineers, technicians and operators respond to real alerts.</p>
+        </div>
+        <div class="funnel">
+          <div style="--i:0"><span class="v num">85+</span><b>Contextual inquiry sessions</b><p>Industrial engineers, technicians and operators</p></div>
+          <div style="--i:1"><span class="v num">60–90</span><b>Minute observations</b><p>Debriefs and structured notes</p></div>
+          <div style="--i:2"><span class="v">FigJam</span><b>Affinity mapping</b><p>Patterns, not individual comments</p></div>
+          <div style="--i:3"><span class="v num">3</span><b>User types</b><p>Personas and journey maps</p></div>
+          <div style="--i:4"><span class="v num">6</span><b>Design principles</b><p>From five key insights</p></div>
+        </div>
+
+        <div class="sub">
+          <div class="tags"><span class="vtag">Said vs observed workflow</span><span class="src doc">Documented</span></div>
+          <h3>What people said and what they did were different.</h3>
+          <div class="saydid">
+            <div class="say"><span class="lbl">What engineers said</span><q>I review the alert and decide.</q></div>
+            <div class="did">
+              <span class="lbl">What we observed</span>
+              <div class="path" aria-label="Alert, then equipment history, vibration trend, temperature, previous maintenance, back to the alert, then the decision">
+                <span>Alert</span><i></i><span>Equipment history</span><i></i><span>Vibration trend</span><i></i><span>Temperature</span><i></i><span>Previous maintenance</span><i></i><span class="loop">Alert again</span><i></i><span class="end">Decision</span>
+              </div>
+              <p>Every decision hid an investigation across several places. My job was to bring that evidence to the alert itself.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub">
+          <div class="tags"><span class="vtag">User types</span><span class="src doc">Documented</span><span class="src syn">Depth meter is my reading</span></div>
+          <h3>"Industrial operator" wasn't one person.</h3>
+          <div class="users">
+            <article class="user">
+              <h3>Senior Maintenance Engineer</h3>
+              <p class="need">"Show me the evidence so I can determine whether I trust this prediction."</p>
+              <div class="depth" aria-label="Information depth: deep"><i class="on"></i><i class="on"></i><i class="on"></i>&nbsp;Deep</div>
+              <p>Often 15+ years with the equipment. Remembers past failures, and because of that expertise, more skeptical of unexplained AI.</p>
+            </article>
+            <article class="user">
+              <h3>Energy Management Operator</h3>
+              <p class="need">"What needs my attention right now?"</p>
+              <div class="depth" aria-label="Information depth: scan"><i class="on"></i><i></i><i></i>&nbsp;Scan</div>
+              <p>Monitors many assets at once. Needs rapid scanning, prioritization and situational awareness.</p>
+            </article>
+            <article class="user">
+              <h3>Maintenance Technician</h3>
+              <p class="need" style="font-style:normal">Which equipment? What's wrong? What's the priority? What do I do?</p>
+              <div class="depth" aria-label="Information depth: execute"><i class="on"></i><i class="on"></i><i></i>&nbsp;Execute</div>
+              <p>Enters close to execution and needs clarity on the inspection or maintenance required.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="sub">
+          <div class="tags"><span class="vtag">Synthesis chain</span><span class="src doc">Documented</span></div>
+          <h3>From observations to product opportunities.</h3>
+          <div class="intro"><p>I didn't treat every comment as a requirement. I looked for recurring behaviour and carried it through this chain, one step at a time.</p></div>
+          <div class="chain" aria-label="Observations, patterns, personas, journey maps, pain points, design principles, product opportunities">
+            <span>Observations</span><i></i><span>Patterns</span><i></i><span>Personas</span><i></i><span>Journey maps</span><i></i><span>Pain points</span><i></i><span>Design principles</span><i></i><span>Product opportunities</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 04 INSIGHTS ============ -->
+      <section class="s" id="insights" aria-labelledby="h-insights">
+        <div class="s-head"><span class="chap">04 · Insights</span><h2 id="h-insights">Five insights became <em class="k">six principles.</em></h2><div class="tags"><span class="vtag">Insight → principle → screen map</span><span class="src mix">Doc + synthesis</span></div></div>
+        <div class="intro">
+          <p>The insights and principles come straight from the research synthesis. The links between them are how I applied them. Select an insight to trace it to the principles it shaped and where it shows up in the product.</p>
+        </div>
+        <div class="goal"><span class="lbl">Design goal</span><p>Create an operational decision-support experience that transforms complex predictive-model outputs into prioritized, explainable, actionable maintenance decisions while preserving expert human judgment.</p></div>
+        <div class="imap" id="imap">
+          <div class="icol"><span class="colh">Insight</span>
+            <button class="ins" type="button" data-p="1,4" data-w="2,3" aria-pressed="false"><span class="n">01</span><b>Accuracy and trust are different problems</b><small>Make the evidence interpretable, not the AI look more confident.</small></button>
+            <button class="ins" type="button" data-p="2,5" data-w="2" aria-pressed="false"><span class="n">02</span><b>Experts didn't need less information</b><small>The problem was poorly structured information.</small></button>
+            <button class="ins" type="button" data-p="5" data-w="4" aria-pressed="false"><span class="n">03</span><b>Engineers think in patterns over time</b><small>A single abnormal value isn't enough.</small></button>
+            <button class="ins" type="button" data-p="3,6" data-w="1,6" aria-pressed="false"><span class="n">04</span><b>Every alert needs an action</b><small>"High risk" describes a state, not a next step.</small></button>
+            <button class="ins" type="button" data-p="4" data-w="5" aria-pressed="false"><span class="n">05</span><b>AI should support human judgment</b><small>AI detects and explains. The human evaluates and decides.</small></button>
+          </div>
+          <div class="icol pcol"><span class="colh">Principle</span>
+            <div class="pr" data-k="1"><span class="n">P1</span>Show the why behind every AI recommendation</div>
+            <div class="pr" data-k="2"><span class="n">P2</span>Minimize cognitive load during active incident response</div>
+            <div class="pr" data-k="3"><span class="n">P3</span>Surface critical information without unnecessary navigation</div>
+            <div class="pr" data-k="4"><span class="n">P4</span>Build trust through transparency, not authority</div>
+            <div class="pr" data-k="5"><span class="n">P5</span>Design for expert users, don't oversimplify the domain</div>
+            <div class="pr" data-k="6"><span class="n">P6</span>Give every alert a clear next action</div>
+          </div>
+          <div class="icol wcol"><span class="colh">Shows up in</span>
+            <div class="wh" data-k="1">Ranked dashboard</div>
+            <div class="wh" data-k="2">Three-level alert</div>
+            <div class="wh" data-k="3">Evidence &amp; AI reasoning</div>
+            <div class="wh" data-k="4">Equipment health timeline</div>
+            <div class="wh" data-k="5">Human decision</div>
+            <div class="wh" data-k="6">Maintenance action</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 05 STRUCTURE ============ -->
+      <section class="s" id="structure" aria-labelledby="h-flow">
+        <div class="s-head"><span class="chap">05 · Flow &amp; structure</span><h2 id="h-flow">I designed around the decision journey, <em class="k">not the backend.</em></h2><div class="tags"><span class="vtag">User flow</span><span class="src doc">Documented</span><span class="src syn">Step-to-screen pairing is mine</span></div></div>
+        <div class="intro">
+          <p>Once I understood the operator's mental model, the flow became <b>Monitor → Prioritize → Investigate → Explain → Validate → Decide → Act → Track</b>, and every major screen answers exactly one question. Pick a step to see its question and screen.</p>
+        </div>
+        <div class="flowmap" role="tablist" aria-label="Decision journey" id="flowmap"></div>
+        <div class="fm-view" id="fm-view" role="tabpanel" aria-live="polite">
+          <div class="txt"><span class="scr" id="fm-scr"></span><p class="qq" id="fm-q"></p><p id="fm-p"></p></div>
+          <div class="shot"><div class="bar"><i></i><i></i><i></i></div><img id="fm-img" alt="" width="1280" height="800"></div>
+        </div>
+
+        <div class="sub">
+          <div class="tags"><span class="vtag">Information architecture · zoomable canvas</span><span class="src syn">Synthesis</span></div>
+          <h3>Where everything lives.</h3>
+          <div class="intro"><p>The project records the IA work but not its structure, so I've drawn this map from the rebuilt product. The teal dashed lines show the decision journey cutting across the navigation. Drag to pan, and use the buttons or Ctrl/⌘ + scroll to zoom.</p></div>
+          <div class="canvas" id="ia" tabindex="0" role="img" aria-label="Information architecture. PMIP has a global bar with site, sync status and shift, and five sections: Dashboard, Equipment, Alerts, Maintenance, and Analytics, which is out of scope. The dashboard holds KPIs, the attention card, the equipment health table, fleet condition, failures by window and scheduled maintenance. Equipment holds the equipment health view with status, trajectory and three tabs. Alerts holds the alert detail with three levels and the human decision. Maintenance holds the schedule, create maintenance action and resolution. Journey links run from the attention card to the alert, from the alert to equipment health, from the decision to the maintenance action, then to the schedule, the resolution, and feedback to the ML team.">
+            <svg id="ia-svg" aria-hidden="true"><g id="ia-g"></g></svg>
+            <div class="ctrl"><button type="button" id="ia-out" aria-label="Zoom out">−</button><span class="z" id="ia-z">100%</span><button type="button" id="ia-in" aria-label="Zoom in">+</button><button type="button" id="ia-fit" aria-label="Fit to view">Fit</button></div>
+            <span class="hint">Drag to pan · Ctrl/⌘ + scroll to zoom</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 06 SPEED VS DEPTH ============ -->
+      <section class="s" id="depth" aria-labelledby="h-depth">
+        <div class="s-head"><span class="chap">06 · The key trade-off</span><h2 id="h-depth">Operators needed speed. <em class="k">Engineers needed depth.</em></h2><div class="tags"><span class="vtag">Design tension</span><span class="src doc">Documented</span></div></div>
+        <div class="intro">
+          <p>This was my most important interaction decision. Operators had to scan alerts fast. When something was serious, engineers needed every piece of evidence. Both failure modes were real.</p>
+        </div>
+        <div class="tension">
+          <div class="pole"><span class="lbl">Put everything on the alert</span><b>Overwhelming</b><p>Every sensor value, chart, score and example at once.</p></div>
+          <div class="mid"><span class="lbl">What I did</span><b>Progressive disclosure</b><p>Fast to scan, deep on request.</p></div>
+          <div class="pole"><span class="lbl">Hide it behind pages</span><b>Slow</b><p>Investigation becomes a trip across screens.</p></div>
+        </div>
+
+        <div class="sub">
+          <div class="tags"><span class="vtag">Before / after · drag to compare</span><span class="src doc">Documented</span></div>
+          <h3>Showing everything was transparent. <em class="k">It was also overwhelming.</em></h3>
+          <div class="intro"><p>My first prototypes put every model output on one screen. It was transparent, and in testing it was overwhelming. Drag the handle to compare, or focus it and use the arrow keys.</p></div>
+          <div class="cmp" id="cmp" style="--x:50%">
+            <img data-img="dense" alt="Before: every model output on one screen, including three sensor charts, feature importance, historical examples, maintenance history and five actions." width="562" height="324">
+            <div class="after"><img data-img="layered" alt="After: alert summary first, with evidence and AI reasoning opening on request." width="562" height="324"></div>
+            <div class="handle"><span class="knob" aria-hidden="true">⇆</span></div>
+            <input type="range" min="0" max="100" value="50" id="cmp-r" aria-label="Reveal before or after">
+          </div>
+          <div class="cmp-labels"><span>Before · everything at once</span><span>After · summary, evidence, reasoning</span></div>
+        </div>
+
+        <div class="sub">
+          <div class="tags"><span class="vtag">Progressive disclosure model</span><span class="src doc">Documented</span></div>
+          <h3>Three levels. <em class="k">The engineer controls the depth.</em></h3>
+          <div class="intro"><p>Each level answers one question, so the engineer can stop as soon as they know enough to act.</p></div>
+          <div class="layers" id="layers">
+            <div class="layer" data-open="true">
+              <button type="button" aria-expanded="true" aria-controls="ly1"><span class="lv">Level 1</span><span><h3>Alert summary</h3><span class="q2">Do I need to care?</span></span><span class="dens" aria-hidden="true"><i class="on"></i><i></i><i></i></span></button>
+              <div class="body" id="ly1">
+                <div class="chip"><span class="lbl">Equipment</span><b>Motor M-204</b></div>
+                <div class="chip"><span class="lbl">Predicted failure</span><b>Bearing degradation</b></div>
+                <div class="chip hot"><span class="lbl">Severity · window</span><b>High risk · 72 h</b></div>
+                <div class="chip"><span class="lbl">Recommended action</span><b>Inspect bearing assembly</b></div>
+                <div class="chip"><span class="lbl">Act within</span><b>24 h</b></div>
+                <div class="chip"><span class="lbl">Model confidence</span><b>87%</b></div>
+              </div>
+            </div>
+            <div class="layer" data-open="false">
+              <button type="button" aria-expanded="false" aria-controls="ly2"><span class="lv">Level 2</span><span><h3>Evidence</h3><span class="q2">What is physically happening?</span></span><span class="dens" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span></button>
+              <div class="body" id="ly2" hidden>
+                <div class="chip hot"><span class="lbl">Vibration now</span><b>12.4 mm/s</b></div>
+                <div class="chip"><span class="lbl">Normal range</span><b>2–8 mm/s</b></div>
+                <div class="chip hot"><span class="lbl">Deviation</span><b>+55%</b></div>
+                <div class="chip hot"><span class="lbl">Duration</span><b>72 hours</b></div>
+                <div class="chip"><span class="lbl">Temperature</span><b>Rising</b></div>
+                <div class="chip"><span class="lbl">Pressure</span><b>In range</b></div>
+              </div>
+            </div>
+            <div class="layer" data-open="false">
+              <button type="button" aria-expanded="false" aria-controls="ly3"><span class="lv">Level 3</span><span><h3>AI reasoning</h3><span class="q2">Why does the model believe this?</span></span><span class="dens" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span></button>
+              <div class="body" id="ly3" hidden>
+                <div class="chip"><span class="lbl">Confidence</span><b>87%</b></div>
+                <div class="chip"><span class="lbl">Signal influence</span><b>Vibration high</b></div>
+                <div class="chip"><span class="lbl">Also</span><b>Temp medium · Pressure low</b></div>
+                <div class="chip"><span class="lbl">Similar patterns</span><b>28 observed</b></div>
+                <div class="chip hot"><span class="lbl">Ended in failure</span><b>24 within 96 h</b></div>
+                <div class="chip"><span class="lbl">Decision owner</span><b>The engineer</b></div>
+              </div>
+            </div>
+          </div>
+          <p class="pullq">Explainability doesn't mean showing everything. It means showing the right evidence at the right moment.</p>
+        </div>
+      </section>
+
+      <!-- ============ 07 PATTERNS OVER TIME ============ -->
+      <section class="s" id="time" aria-labelledby="h-time">
+        <div class="s-head"><span class="chap">07 · Patterns over time</span><h2 id="h-time">Engineers don't think in snapshots. <em class="k">They think in trajectories.</em></h2><div class="tags"><span class="vtag">Equipment health timeline</span><span class="src doc">Documented</span></div></div>
+        <div class="intro">
+          <p>Research showed a single abnormal reading wasn't enough for a senior engineer. They wanted to know how the asset got here. So instead of only today's value, I designed a longitudinal view that lets them reconcile the AI's prediction with their own knowledge of the machine.</p>
+        </div>
+        <ol class="ptime">
+          <li style="--c:var(--ok)"><span class="w">Week 1</span><b>Normal operation</b><span class="bars" aria-hidden="true"><i style="height:30%"></i><i style="height:34%"></i><i style="height:28%"></i><i style="height:32%"></i></span></li>
+          <li style="--c:var(--warn)"><span class="w">Week 2</span><b>Minor vibration deviation</b><span class="bars" aria-hidden="true"><i style="height:34%"></i><i style="height:38%"></i><i style="height:36%"></i><i style="height:40%"></i></span></li>
+          <li style="--c:var(--warn)"><span class="w">Week 3</span><b>Repeated threshold violations</b><span class="bars" aria-hidden="true"><i style="height:40%"></i><i style="height:76%"></i><i style="height:42%"></i><i style="height:80%"></i></span></li>
+          <li style="--c:var(--crit)"><span class="w">Week 4</span><b>Temperature begins increasing</b><span class="bars" aria-hidden="true"><i style="height:52%"></i><i style="height:58%"></i><i style="height:64%"></i><i style="height:70%"></i></span></li>
+          <li style="--c:var(--crit)"><span class="w">Current</span><b>Persistent vibration + temperature anomaly</b><span class="bars" aria-hidden="true"><i style="height:82%"></i><i style="height:88%"></i><i style="height:94%"></i><i style="height:100%"></i></span></li>
+          <li class="pred" style="--c:var(--crit)"><span class="w">Prediction</span><b>Bearing degradation · High risk</b></li>
+        </ol>
+        <div class="ptq">
+          <div>Did this suddenly spike?</div>
+          <div>Has it gradually deteriorated?</div>
+          <div>Did anything change after the last maintenance?</div>
+          <div>Does this match what I know about this machine?</div>
+        </div>
+      </section>
+
+      <!-- ============ 08 DECISION LOG ============ -->
+      <section class="s" id="decisions" aria-labelledby="h-decisions">
+        <div class="s-head"><span class="chap">08 · Decision log</span><h2 id="h-decisions">Six forks in the road. <em class="k">What I chose, and why.</em></h2><div class="tags"><span class="vtag">Decision log · options and trade-offs</span><span class="src mix">Doc + synthesis</span></div></div>
+        <div class="intro"><p>Every one of these decisions had a reasonable alternative. The choices themselves are documented; the trade-off lines are my own account of what each choice cost.</p></div>
+        <div class="dlog">
+          <div class="dtabs" role="tablist" aria-label="Design decisions" id="dtabs"></div>
+          <div class="dpanel" role="tabpanel" id="dpanel" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- ============ 09 HUMAN + AI ============ -->
+      <section class="s" id="human-ai" aria-labelledby="h-hai">
+        <div class="s-head"><span class="chap">09 · Human + AI</span><h2 id="h-hai">The model recommends. <em class="k">The engineer decides.</em></h2><div class="tags"><span class="vtag">Human–AI authority model</span><span class="src doc">Documented</span></div></div>
+        <div class="intro">
+          <p>This is high-stakes industrial software, so I didn't want the interface to imply "AI decides, human follows". The model detects and explains. Authority then passes to the engineer, who evaluates, decides and acts. Select a step to see it on Motor M-204.</p>
+        </div>
+        <div class="auth" id="auth">
+          <span class="lane-l m">Model</span>
+          <button class="astep m" type="button" data-i="0"><b>Detects</b><small>Anomaly in sensor data</small></button>
+          <button class="astep m" type="button" data-i="1"><b>Explains</b><small>Evidence, confidence, precedent</small></button>
+          <span class="ghost" aria-hidden="true"></span><span class="ghost" aria-hidden="true"></span><span class="ghost" aria-hidden="true"></span>
+          <span class="lane-l h">Engineer</span>
+          <span class="ghost" aria-hidden="true"></span><span class="ghost" aria-hidden="true"></span>
+          <button class="astep h" type="button" data-i="2"><b>Evaluates</b><small>Checks it against experience</small></button>
+          <button class="astep h" type="button" data-i="3"><b>Decides</b><small>Agree, or disagree with a reason</small></button>
+          <button class="astep h" type="button" data-i="4"><b>Acts</b><small>Maintenance, monitoring or escalation</small></button>
+          <span class="handoff" aria-hidden="true"><span style="flex:0 0 calc(40% - 4px)"></span>↳ Authority passes to the engineer here</span>
+        </div>
+        <div class="auth-detail" id="auth-d" aria-live="polite"></div>
+
+        <div class="sub">
+          <div class="tags"><span class="vtag">Decision flow · agree / disagree</span><span class="src doc">Documented</span></div>
+          <h3>Both answers are first-class. <em class="k">Both are useful.</em></h3>
+          <div class="intro"><p>Agreeing moves straight into maintenance without retyping anything. Disagreeing needs a reason, and that reason is information: if experienced engineers keep disagreeing with one type of prediction, the product and ML teams need to know. Choose an answer to follow its path.</p></div>
+          <div class="dflow" id="dflow" data-pick="">
+            <div class="dstart">
+              <span><span class="lbl">Recommendation</span><br><b>Inspect bearing assembly within 24 hours</b></span>
+              <div class="seg" role="group" aria-label="Your answer"><button type="button" data-pick="agree" aria-pressed="false">Agree</button><button type="button" data-pick="disagree" aria-pressed="false">Disagree / defer</button></div>
+            </div>
+            <div class="branches">
+              <div class="br ag">
+                <h3><i style="background:var(--accent)"></i>Agree</h3>
+                <ol>
+                  <li>Review recommendation</li>
+                  <li>Schedule maintenance<small>Context carried over, never re-entered</small></li>
+                  <li>Confirm action</li>
+                </ol>
+              </div>
+              <div class="br dg">
+                <h3><i style="background:var(--ink-2)"></i>Disagree / defer</h3>
+                <ol>
+                  <li>Provide a reason<div class="reasons"><span>Recently inspected</span><span>Suspected sensor calibration issue</span><span>Known operating condition</span><span>Additional investigation required</span></div></li>
+                  <li>Continue monitoring, or escalate</li>
+                  <li>Repeated disagreement becomes signal<small>Useful information for the product and ML teams</small></li>
+                </ol>
+              </div>
+            </div>
+            <div class="carryover"><b>Context preservation:</b><span>asset</span><span>issue</span><span>severity</span><span>recommendation</span><span>timeframe</span> already known, so never typed twice.</div>
+          </div>
+        </div>
+
+        <div class="sub">
+          <div class="tags"><span class="vtag">Trust calibration · guardrails</span><span class="src syn">Synthesis</span></div>
+          <h3>Not more trust. <em class="k">The right amount of trust.</em></h3>
+          <div class="intro"><p>The goal was never to make people trust the AI more. It was to make their trust match the evidence. Some of these behaviours are documented and some are my extensions in the rebuild. Grouping them on a trust scale is my framing.</p></div>
+          <div class="guard">
+            <div class="scale" role="img" aria-label="Trust scale from blind trust on the left to ignoring the model on the right, with calibrated trust in the middle.">
+              <span class="mid">Calibrated trust</span><span class="track"></span><span class="zone"></span>
+              <span class="end l">Blind trust</span><span class="end r">Ignores the model</span>
+            </div>
+            <div class="gcols">
+              <div class="gcol">
+                <h3><span class="arr">→</span>Pulling back from blind trust</h3>
+                <div class="g"><b>Agree unlocks after the evidence is opened</b><p>Rebuild extension. No one approves a prediction they haven't looked at.</p></div>
+                <div class="g"><b>Confidence always travels with precedent</b><p>87% sits beside "24 of 28 similar patterns failed", never alone.</p></div>
+                <div class="g"><b>Sensor health beside every reading</b><p>Rebuild extension. Stale data warns that confidence may be lower.</p></div>
+              </div>
+              <div class="gcol">
+                <h3><span class="arr">←</span>Pulling back from ignoring the model</h3>
+                <div class="g"><b>Evidence one step from the summary</b><p>Checking a prediction costs seconds, not a trip across systems.</p></div>
+                <div class="g"><b>Evidence in the units engineers already read</b><p>mm/s and °C against the normal operating range.</p></div>
+                <div class="g"><b>Disagreement is captured, not lost</b><p>A reason feeds back to the product and ML teams.</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub">
+          <div class="tags"><span class="vtag">Feedback loop</span><span class="src doc">Documented</span></div>
+          <h3>The loop closes <em class="k">back into the model.</em></h3>
+          <div class="intro"><p>I didn't want PMIP to end at "AI generated an alert". Every prediction ends in a human assessment, an action, and feedback to the teams who own the model. Example values come from the rebuilt prototype.</p></div>
+          <div class="loopwrap">
+            <svg class="loopsvg" viewBox="0 0 560 380" role="img" aria-labelledby="loop-t">
+              <title id="loop-t">Feedback loop: prediction, explanation, human assessment, operational action, feedback, and back to prediction.</title>
+              <circle class="ring" cx="280" cy="190" r="132"/>
+              <circle class="flow" cx="280" cy="190" r="132" transform="rotate(-90 280 190)"/>
+              <text class="ctr" x="280" y="186" text-anchor="middle">Human-in-the-loop</text>
+              <text class="ctr" x="280" y="206" text-anchor="middle">feedback</text>
+              <g id="loop-nodes"></g>
+            </svg>
+            <ol class="loop-list" id="loop-list"></ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 10 SYSTEM ============ -->
+      <section class="s" id="system" aria-labelledby="h-sys">
+        <div class="s-head"><span class="chap">10 · The system</span><h2 id="h-sys">I owned one layer. <em class="k">I had to understand all of them.</em></h2><div class="tags"><span class="vtag">Technical architecture</span><span class="src doc">Documented</span></div></div>
+        <div class="intro">
+          <p>I wasn't training the models or building the data infrastructure. ML engineers owned the models, backend engineers owned the data and APIs, and frontend engineers owned production code. I owned the product experience and its design architecture. Designing that layer well meant knowing exactly what the layers below it could and couldn't provide. Select a layer to see who owns it.</p>
+        </div>
+        <div class="arch">
+          <div class="stack" id="stack"></div>
+          <aside class="arch-side" aria-live="polite"><span class="lbl" id="ar-own"></span><h3 id="ar-h"></h3><p id="ar-p"></p></aside>
+        </div>
+        <div class="legend"><span><i style="background:var(--accent)"></i>My primary ownership</span><span><i style="background:var(--paper);box-shadow:inset 3px 0 0 var(--warn)"></i>Where the explainability gap was</span></div>
+
+        <div class="sub">
+          <div class="tags"><span class="vtag">Explainability dependency · API change</span><span class="src doc">Documented</span></div>
+          <h3>The API didn't explain the model. <em class="k">So we changed the API.</em></h3>
+          <div class="intro"><p>To answer "which signals drove this prediction?", the interface needed feature importance, and the model API didn't expose it at first. Instead of cutting the feature, I took the operator's question to the ML team.</p></div>
+          <ol class="dep">
+            <li><span class="w">Me</span><b>The operator question</b><p>Which signals most strongly drove this prediction?</p></li>
+            <li><span class="w">Me</span><b>The proposed UI</b><p>Signal influence and precedent in Level 3.</p></li>
+            <li><span class="w">Me</span><b>Why it matters</b><p>Engineers trust what they can check.</p></li>
+            <li><span class="w">Me</span><b>The data needed</b><p>Feature importance exposed through the API.</p></li>
+            <li class="who-ml"><span class="w">ML team</span><b>Feasibility review</b><p>Which explainability outputs could be exposed.</p></li>
+            <li class="done"><span class="w">Result</span><b>Outputs added to the API</b><p>Level 3 became possible.</p></li>
+          </ol>
+          <div class="dep-out">
+            <div class="bad"><span class="lbl">The easy path</span><b>"Backend doesn't support it."</b><p>Drop the AI reasoning view and ship a prediction without its why.</p></div>
+            <div class="good"><span class="lbl">What we did</span><b>Bring the user's question to the ML team</b><p>Explainability isn't only a UI problem. The system has to expose enough reasoning for the interface to show it.</p></div>
+          </div>
+        </div>
+
+        <div class="sub">
+          <div class="tags"><span class="vtag">Collaboration map</span><span class="src doc">Documented</span></div>
+          <h3>Who I worked with, <em class="k">and on what.</em></h3>
+          <div class="intro"><p>PMIP only worked because these teams moved together. This is what I worked through with each of them.</p></div>
+          <div class="collab">
+            <div class="cp" tabindex="0"><span class="own">Owned the models</span><h3>ML engineers</h3><p>Evaluated which explainability outputs could be exposed, then added them to the API.</p></div>
+            <div class="cp" tabindex="0"><span class="own">Requirements</span><h3>Product managers</h3><p>I turned "operators need to respond faster" into testable interaction hypotheses.</p></div>
+            <div class="cp" tabindex="0"><span class="own">Owned implementation</span><h3>Frontend engineers</h3><p>Feasibility, responsive behaviour, states, tokens, accessibility, edge cases and implementation QA.</p></div>
+            <div class="cp" tabindex="0"><span class="own">Users and partners</span><h3>Industrial engineers</h3><p>20+ kept contributing through validation, checking "does this make sense operationally?"</p></div>
+            <div class="hub"><b>Product design</b><small>Experience layer and design architecture</small></div>
+            <div class="cp" tabindex="0"><span class="own">Research partners</span><h3>UX researchers</h3><p>Contextual sessions synthesized into personas, journeys and principles.</p></div>
+            <div class="cp" tabindex="0"><span class="own">Owned the data</span><h3>Backend engineers</h3><p>Data infrastructure and APIs, including the explainability outputs.</p></div>
+            <div class="cp" tabindex="0"><span class="own">Separate team · validated compliance</span><h3>QA &amp; accessibility</h3><p>I authored the accessibility states and annotations as a collaborator. The QA team validated compliance.</p></div>
+            <div class="cp" tabindex="0"><span class="own">Model outputs</span><h3>Data scientists</h3><p>Confidence, feature importance and what the experience needed to explain a prediction.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 11 SCREENS ============ -->
+      <section class="s" id="screens" aria-labelledby="h-screens">
+        <div class="s-head"><span class="chap">11 · The screens</span><h2 id="h-screens">From the first scan <em class="k">to the closed loop.</em></h2><div class="tags"><span class="vtag">Screen gallery</span><span class="src doc">Documented</span></div></div>
+        <div class="intro"><p>Here are the nine screens, rebuilt from the project documentation. The maintenance action, schedule and resolution complete the documented journey, but their exact layouts are my concept flows, so I've marked them. The live prototype is fully clickable if you want to walk the flow yourself.</p></div>
+        <div class="gal">
+          <div class="gtabs" role="tablist" aria-label="Screens" id="gtabs"></div>
+          <div class="gview" role="tabpanel" id="gview">
+            <div class="shot"><div class="bar"><i></i><i></i><i></i></div><img id="g-img" alt="" width="1280" height="800"></div>
+            <div class="ginfo">
+              <span class="lbl" id="g-n"></span>
+              <p class="qq" id="g-q"></p>
+              <span class="concept" id="g-c" hidden>Concept flow</span>
+              <p id="g-p"></p>
+              <div class="nav"><button class="btn" type="button" id="g-prev" aria-label="Previous screen">←</button><button class="btn" type="button" id="g-next" aria-label="Next screen">→</button></div>
+              <a class="btn primary" href="prototype.html" target="_blank" rel="noopener">Open the live prototype ↗</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 12 TESTING ============ -->
+      <section class="s" id="testing" aria-labelledby="h-test">
+        <div class="s-head"><span class="chap">12 · Testing</span><h2 id="h-test">I didn't ask if they liked it. <em class="k">I asked them to decide.</em></h2><div class="tags"><span class="vtag">Task-based test plan</span><span class="src doc">Documented</span><span class="src syn">"What it checks" is my reading</span></div></div>
+        <div class="intro">
+          <p>"Do you like this dashboard?" tells you very little. With interactive prototypes, I gave engineers realistic tasks in sequence, so we could see whether the interface supported the actual decision.</p>
+          <p>Testing wasn't a one-off. <b>20+ industrial engineers</b> kept contributing through design validation and follow-up research, so every round could check "does this make sense operationally?", not just "does this look good?"</p>
+        </div>
+        <div class="tstats">
+          <div><span class="v num">20+</span><span>engineers through validation and follow-up research</span></div>
+          <div><span class="v num">6</span><span>realistic tasks, run in sequence on interactive prototypes</span></div>
+          <div><span class="v num">1</span><span>major iteration that reshaped the alert: information density</span></div>
+        </div>
+        <ol class="tasks" id="tasks"></ol>
+        <div class="sub">
+          <div class="tags"><span class="vtag">Prototyping strategy</span><span class="src doc">Documented</span></div>
+          <h3>Two tools, two jobs.</h3>
+          <div class="intro"><p>I picked the tool by what I needed to learn: Framer when the prototype had to feel like the real product, ProtoPie when the decision logic itself was under test.</p></div>
+          <div class="protos">
+            <div class="proto"><span class="for">For realistic behaviour</span><h3>Framer</h3><ul><li>Responsive dashboards and filtering</li><li>Equipment navigation and expandable panels</li><li>Realistic sensor-data visualization</li></ul></div>
+            <div class="proto"><span class="for">For conditional logic</span><h3>ProtoPie</h3><ul><li><code>Summary → Evidence → AI reasoning</code></li><li><code>Agree → Maintenance</code></li><li><code>Disagree → Reason → Defer</code></li></ul></div>
+          </div>
+        </div>
+        <div class="sub">
+          <div class="tags"><span class="vtag">Major iteration</span><span class="src doc">Documented</span></div>
+          <h3>The iteration that shaped the product.</h3>
+          <div class="intro"><p>One round of testing changed the alert more than any other, and it is the reason the three levels exist.</p></div>
+          <div class="iter">
+            <div class="b4"><span class="lbl">Before</span><b>Everything visible at once</b><p>Severity, confidence, four sensor charts, feature importance, history, precedent and the recommendation on one screen. Cognitive overload.</p></div>
+            <div class="arw" aria-hidden="true"><span>→</span></div>
+            <div class="af"><span class="lbl">After</span><b>Summary → Evidence → AI reasoning</b><p>The same information in layers. Users control how deep they go.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 13 SHIPPING ============ -->
+      <section class="s" id="shipping" aria-labelledby="h-ship">
+        <div class="s-head"><span class="chap">13 · Shipping</span><h2 id="h-ship">The happy path is the easy part. <em class="k">I specified the rest.</em></h2><div class="tags"><span class="vtag">Edge states</span><span class="src doc">Documented</span></div></div>
+        <div class="intro"><p>An enterprise product isn't only its happy path. Before handoff, I worked through what happens when the system can't give the full picture, and specified each case.</p></div>
+        <div class="edges">
+          <div class="edge"><div class="thumb"><img data-img="edge0" alt="Evidence panel showing the current reading while the chart loads." loading="lazy"></div><b>Sensor history is loading</b><p>The latest reading shows first. The trend fills in.</p></div>
+          <div class="edge"><div class="thumb"><img data-img="edge1" alt="Empty equipment health table: nothing needs attention, next model run at 14:30." loading="lazy"></div><b>No active alerts</b><p>Said plainly, with the next model run.</p></div>
+          <div class="edge"><div class="thumb"><img data-img="edge2" alt="AI reasoning panel stating reasoning isn't available, with links to evidence." loading="lazy"></div><b>Explainability unavailable</b><p>Point back to the evidence instead of guessing.</p></div>
+          <div class="edge"><div class="thumb"><img data-img="edge3" alt="Disagree form with required reason and a disabled Log decision button." loading="lazy"></div><b>The operator disagrees</b><p>Nothing is logged until a reason is chosen.</p></div>
+          <div class="edge"><div class="thumb"><img data-img="edge4" alt="Decision panel with Agree disabled and a note to open the evidence." loading="lazy"></div><b>Disabled state</b><p>Agree is unavailable until the evidence is opened.</p></div>
+          <div class="edge"><div class="thumb"><img data-img="edge5" alt="Error message: maintenance system unreachable, work order saved as a draft." loading="lazy"></div><b>Error state</b><p>Nothing the operator entered is lost.</p></div>
+        </div>
+        <div class="sub">
+          <div class="tags"><span class="vtag">Handoff package</span><span class="src doc">Documented</span></div>
+          <h3>What engineering received.</h3>
+          <div class="intro"><p>My handoff covered everything a frontend engineer would otherwise have to guess.</p></div>
+          <div class="handoffs">
+            <div class="ho"><h3>Structure</h3><ul><li>Component references</li><li>Design-token references</li><li>Spacing</li></ul></div>
+            <div class="ho"><h3>Behaviour</h3><ul><li>Interaction states</li><li>Responsive behaviour</li><li>Keyboard behaviour</li><li>Chart behaviour</li><li>Conditional logic</li></ul></div>
+            <div class="ho"><h3>States</h3><ul><li>Loading states</li><li>Empty states</li><li>Error states</li><li>Edge cases</li></ul></div>
+            <div class="ho"><h3>Accessibility</h3><ul><li>Accessibility annotations</li><li>Severity as colour, icon and label</li><li>Visible focus states</li></ul></div>
+          </div>
+          <div class="qa-line"><span class="vtag">Implementation QA</span><span>QA and accessibility ran as a separate team that validated compliance. I partnered with them and with frontend engineering during implementation QA, comparing the build against the intended behaviour, states and accessibility to preserve the design intent.</span></div>
+        </div>
+      </section>
+
+      <!-- ============ 14 RESULTS ============ -->
+      <section class="s" id="results" aria-labelledby="h-res">
+        <div class="s-head"><span class="chap">14 · Results</span><h2 id="h-res">What changed, <em class="k">and who made it happen.</em></h2><div class="tags"><span class="vtag">Results with attribution</span><span class="src doc">Documented</span></div></div>
+        <div class="intro"><p>The outcome wasn't "we redesigned a dashboard". I'm careful about credit here: the models generated the predictions, and my work focused on helping operators understand and act on them.</p></div>
+        <div class="results">
+          <div class="res"><span class="v num">28%</span><b>Less equipment downtime</b><p>Proactive alerts and explainable AI supported earlier intervention.</p><span class="credit">Models predicted · design made predictions actionable</span></div>
+          <div class="res"><span class="v num">35%</span><b>Better task completion</b><p>Complex energy-management tasks after the research-driven workflow redesign.</p><span class="credit">Research and workflow redesign</span></div>
+          <div class="res"><span class="v num">50%</span><b>Shorter approval cycles</b><p>Stakeholders interacted with prototypes instead of interpreting screenshots.</p><span class="credit">Interactive prototypes and design sprints</span></div>
+          <div class="res"><span class="v num">6 wk</span><b>Faster feature deployment</b><p>Faster design alignment let engineering begin sooner.</p><span class="credit">Design process</span></div>
+        </div>
+        <div class="sub">
+          <div class="tags"><span class="vtag">Learnings</span><span class="src doc">Documented</span></div>
+          <h3>What I took away.</h3>
+          <div class="learn">
+            <div><b>Accuracy doesn't create trust.</b><p>A strong model can still be a weak product if people don't understand its outputs. Trust has to be designed.</p></div>
+            <div><b>Explainability is evidence, not volume.</b><p>The information has to answer the user's decision questions, in the order they ask them.</p></div>
+            <div><b>Expert UX isn't simplification.</b><p>Experts need depth. The designer's job is hierarchy, context, progressive disclosure and control.</p></div>
+            <div><b>Human-in-the-loop has to mean something.</b><p>Not "AI says X, user clicks confirm". The engineer evaluates and decides, and that decision teaches the system.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <footer><span>Kalyan Kadavanti Sudhakar · PMIP case study</span><span>Screens rebuilt from project documentation</span></footer>
+    </div>
+  </main>
+</div>
+
+<script>
+var IMGS = {"overview": "img/i01.jpg", "alert": "img/i02.jpg", "evidence": "img/i03.jpg", "reasoning": "img/i04.jpg", "health": "img/i05.jpg", "decision": "img/i06.jpg", "maintenance": "img/i07.jpg", "schedule": "img/i08.jpg", "history": "img/i09.jpg", "dense": "img/i10.jpg", "layered": "img/i11.jpg", "edge0": "img/i12.jpg", "edge1": "img/i13.jpg", "edge2": "img/i14.jpg", "edge3": "img/i15.jpg", "edge4": "img/i16.jpg", "edge5": "img/i17.jpg"};
+(function(){
+  var $ = function(s,c){return (c||document).querySelector(s);}, $$ = function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s));};
+  $$("img[data-img]").forEach(function(im){ im.src = IMGS[im.getAttribute("data-img")]; });
+
+  /* generic tablist keyboard: arrows move, Home/End */
+  function tablist(btns, pick){
+    btns.forEach(function(b,i){
+      b.addEventListener("click", function(){ pick(i); });
+      b.addEventListener("keydown", function(e){
+        var k = e.key, n = -1;
+        if(k==="ArrowRight"||k==="ArrowDown") n = (i+1)%btns.length;
+        else if(k==="ArrowLeft"||k==="ArrowUp") n = (i-1+btns.length)%btns.length;
+        else if(k==="Home") n = 0; else if(k==="End") n = btns.length-1;
+        if(n<0) return; e.preventDefault(); pick(n); btns[n].focus();
+      });
+    });
+  }
+  function sel(btns, i){ btns.forEach(function(b,j){ b.setAttribute("aria-selected", j===i?"true":"false"); b.tabIndex = j===i?0:-1; }); }
+
+  /* V1 question wall */
+  var qw = $("#qw");
+  $$("#qw .seg button").forEach(function(b){
+    b.addEventListener("click", function(){
+      var m = b.getAttribute("data-mode"); qw.setAttribute("data-mode", m);
+      $$("#qw .seg button").forEach(function(o){ o.setAttribute("aria-pressed", o===b?"true":"false"); });
+      $("#qw-n").textContent = m==="new" ? "9" : "0";
+    });
+  });
+
+  /* V3 flow map */
+  var FLOW = [
+    ["Monitor","Dashboard","What needs my attention?","overview","Ranked by severity and time to failure, not by arrival time."],
+    ["Prioritize","Predictive alert","What's likely to happen?","alert","Level 1 states the asset, failure, window and next action."],
+    ["Investigate","Evidence","What is physically changing?","evidence","Readings against the normal range, in units engineers already use."],
+    ["Explain","AI reasoning","Why does the model believe this?","reasoning","Confidence, signal influence and historical precedent together."],
+    ["Validate","Equipment health","How did we get here?","health","Four weeks of trajectory: sudden or gradual, and what changed."],
+    ["Decide","Human decision","Do I agree?","decision","Agree, or disagree with a reason. Both are logged."],
+    ["Act","Maintenance action","What should happen next?","maintenance","Pre-filled from the alert, with evidence attached. Concept flow."],
+    ["Track","Resolution","What actually happened?","history","Outcome recorded and shared back with the ML team. Concept flow."]
+  ];
+  var fm = $("#flowmap");
+  fm.innerHTML = FLOW.map(function(f,i){ return '<button class="fm" role="tab" type="button" id="fm'+i+'" aria-controls="fm-view"><span class="st">'+(i+1)+' · '+f[0]+'</span><b>'+f[1]+'</b></button>'; }).join("");
+  var fmb = $$(".fm", fm);
+  function fmPick(i){ sel(fmb,i); var f = FLOW[i]; $("#fm-scr").textContent = f[1]; $("#fm-q").textContent = f[2]; $("#fm-p").textContent = f[4]; $("#fm-img").src = IMGS[f[3]]; $("#fm-img").alt = f[1]+" screen"; $("#fm-view").setAttribute("aria-labelledby","fm"+i); }
+  tablist(fmb, fmPick); fmPick(0);
+
+  /* V4 compare slider */
+  var cmp = $("#cmp"), cr = $("#cmp-r");
+  cr.addEventListener("input", function(){ cmp.style.setProperty("--x", cr.value+"%"); });
+
+  /* V5 layers */
+  $$("#layers .layer").forEach(function(l){
+    var b = $("button", l), body = $(".body", l);
+    b.addEventListener("click", function(){
+      var open = b.getAttribute("aria-expanded") !== "true";
+      b.setAttribute("aria-expanded", open?"true":"false"); body.hidden = !open; l.setAttribute("data-open", open?"true":"false");
+    });
+  });
+
+  /* V6 decision log */
+  var DEC = [
+    {t:"Dashboard order", src:"mix", q:"How should the dashboard order alerts?",
+     a:["Chronological feed","Newest alert first, as before."], b:["Ranked by urgency and actionability","Severity and time to failure set the order."],
+     why:"Recency and importance aren't the same. An alert that arrived two minutes ago isn't automatically more urgent than an asset deteriorating for 48 hours.", cost:"New arrivals no longer float to the top, so a new prediction needs its own visible status."},
+    {t:"How much to show", src:"mix", q:"How much of the model's output should the alert show?",
+     a:["Everything at once","Fully transparent: every chart, score and example on one screen."], b:["Three levels on request","Summary, then evidence, then AI reasoning."],
+     why:"Testing showed cognitive overload. Explainability means the right evidence at the right moment, not all of it at once.", cost:"Some information is one click away, so Level 1 must be enough to decide whether to look."},
+    {t:"Who to design for", src:"mix", q:"Simplify for everyone, or design for experts?",
+     a:["Simplify the domain","Hide technical detail to reduce load."], b:["Keep the depth, structure it","Expert users need complexity. The problem was poor structure."],
+     why:"Senior engineers distrusted anything they couldn't check. Removing depth would have removed trust.", cost:"More to design and specify: hierarchy, states and progressive disclosure for every level."},
+    {t:"Missing model data", src:"mix", q:"The API didn't expose feature importance. What now?",
+     a:["Drop the AI reasoning view","Ship what the backend supports today."], b:["Take the user's question to the ML team","Show the question, the UI, why it matters, and the data needed."],
+     why:"Without signal influence, the prediction stays a black box. The ML team found what could be exposed, and it was added to the API.", cost:"A cross-team dependency on the critical path, managed with a clear ask."},
+    {t:"How severity is shown", src:"mix", q:"How should severity be communicated?",
+     a:["Colour coding","Red, orange, green."], b:["Colour, icon and text label","Every severity is readable without colour."],
+     why:"Colour alone fails for colour-blind users. Accessibility was built into the components, not added at the end.", cost:"Severity badges take more space, so tables and cards were sized for them."},
+    {t:"The agree gate", src:"syn", q:"Can someone agree without looking at the evidence?",
+     a:["One-click confirm","Fastest path: approve straight from the summary."], b:["Agree after the evidence is opened","Disagree always needs a reason."],
+     why:"A human in the loop only helps if the human actually evaluates. The documented flow requires a reason to disagree; locking Agree until the evidence is opened is my extension of that principle in the rebuild.", cost:"One extra step for confident engineers, kept to a single click."}
+  ];
+  var dt = $("#dtabs");
+  dt.innerHTML = DEC.map(function(d,i){ return '<button class="dtab" role="tab" type="button" id="dt'+i+'" aria-controls="dpanel"><span class="n">0'+(i+1)+'</span>'+d.t+'</button>'; }).join("");
+  var dtb = $$(".dtab", dt);
+  function dPick(i){
+    sel(dtb,i); var d = DEC[i];
+    $("#dpanel").setAttribute("aria-labelledby","dt"+i);
+    $("#dpanel").innerHTML = '<div class="ctx"><span class="lbl">Decision '+(i+1)+' of 6</span><span class="src '+(d.src==="mix"?"mix":"syn")+'">'+(d.src==="mix"?"Choice documented · trade-off mine":"Synthesis")+'</span></div>'+
+      '<h3>'+d.q+'</h3>'+
+      '<div class="opts2"><div class="opt2 rej"><span class="tag">Option A · not chosen</span><b>'+d.a[0]+'</b><p>'+d.a[1]+'</p></div>'+
+      '<div class="opt2 chosen"><span class="tag">Option B · chosen ✓</span><b>'+d.b[0]+'</b><p>'+d.b[1]+'</p></div></div>'+
+      '<div class="why"><span class="lbl">Why</span><span>'+d.why+'</span><span class="lbl">Trade-off</span><span>'+d.cost+'</span></div>';
+  }
+  tablist(dtb, dPick); dPick(0);
+
+  /* V7 authority */
+  var AUTH = [
+    ["Model detects","Vibration on M-204 leaves its normal range and stays there."],
+    ["Model explains","Bearing degradation · 87% confidence · vibration high influence · 24 of 28 similar patterns failed within 96 h."],
+    ["Engineer evaluates","Opens the evidence: 12.4 mm/s against 2–8 mm/s for 72 hours, temperature rising."],
+    ["Engineer decides","Agrees with the recommendation, or disagrees with a reason such as \"recently inspected\"."],
+    ["Engineer acts","Schedules the bearing inspection at the next planned stop, with evidence attached."]
+  ];
+  var ab = $$("#auth .astep");
+  function aPick(i){ ab.forEach(function(b,j){ b.setAttribute("aria-pressed", j===i?"true":"false"); }); $("#auth-d").innerHTML = '<span class="lbl">'+AUTH[i][0]+'</span><span class="ex">'+AUTH[i][1]+'</span>'; }
+  ab.forEach(function(b){ b.addEventListener("click", function(){ aPick(+b.getAttribute("data-i")); }); });
+  aPick(1);
+
+  /* V8 decision flow */
+  var df = $("#dflow");
+  $$("#dflow .seg button").forEach(function(b){
+    b.addEventListener("click", function(){
+      var p = b.getAttribute("data-pick"), same = df.getAttribute("data-pick")===p;
+      df.setAttribute("data-pick", same ? "" : p);
+      $$("#dflow .seg button").forEach(function(o){ o.setAttribute("aria-pressed", (!same && o===b)?"true":"false"); });
+    });
+  });
+
+  /* V10 loop */
+  var LOOP = [
+    ["Prediction","Bearing degradation · 87% · within 72 h"],
+    ["Explanation","12.4 mm/s vs 2–8 normal · 24 of 28 similar patterns failed"],
+    ["Human assessment","Engineer reviews the evidence and agrees, or disagrees with a reason"],
+    ["Operational action","Bearing inspected and replaced at a planned stop"],
+    ["Feedback","Outcome and disagreements reach the product and ML teams"]
+  ];
+  var g = "", cx=280, cy=190, R=132;
+  LOOP.forEach(function(l,i){
+    var a = -Math.PI/2 + i*2*Math.PI/LOOP.length, x = cx+R*Math.cos(a), y = cy+R*Math.sin(a);
+    var lx = cx+(R+30)*Math.cos(a), ly = cy+(R+30)*Math.sin(a)+4, anchor = Math.abs(Math.cos(a))<.2 ? "middle" : (Math.cos(a)>0?"start":"end");
+    if(i===0) ly = y-24;
+    g += '<g class="node" data-i="'+i+'" tabindex="0" role="button" aria-label="'+(i+1)+'. '+l[0]+': '+l[1]+'"><circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="16"/><text class="n" x="'+x.toFixed(1)+'" y="'+(y+4).toFixed(1)+'" text-anchor="middle">'+(i+1)+'</text>'+
+         '<text class="lab" x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="'+anchor+'">'+l[0]+'</text></g>';
+  });
+  $("#loop-nodes").innerHTML = g;
+  $("#loop-list").innerHTML = LOOP.map(function(l,i){ return '<li data-i="'+i+'"><span class="n">0'+(i+1)+'</span><b>'+l[0]+'</b><small>'+l[1]+'</small></li>'; }).join("");
+  function lPick(i){ $$("#loop-nodes .node").forEach(function(n,j){ n.classList.toggle("on", j===i); }); $$("#loop-list li").forEach(function(n,j){ n.classList.toggle("on", j===i); }); }
+  $$("#loop-nodes .node").forEach(function(n){
+    var i = +n.getAttribute("data-i");
+    n.addEventListener("click", function(){ lPick(i); }); n.addEventListener("focus", function(){ lPick(i); }); n.addEventListener("mouseenter", function(){ lPick(i); });
+    n.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); lPick(i); } });
+  });
+  $$("#loop-list li").forEach(function(n){ n.addEventListener("mouseenter", function(){ lPick(+n.getAttribute("data-i")); }); });
+  lPick(1);
+
+  /* V11 architecture */
+  var ARCH = [
+    ["Industrial equipment","Plant operations","Motors, pumps, turbines, compressors, heat exchangers.",""],
+    ["IoT / equipment sensors","Data infrastructure","Vibration, temperature and pressure readings.",""],
+    ["Operational data pipeline","Backend engineers","Aggregates sensor data for the models.",""],
+    ["ML anomaly detection / failure prediction","ML engineers","Finds patterns associated with failure.",""],
+    ["Prediction + confidence + explainability","ML engineers","The gap: feature importance wasn't exposed at first.","gap"],
+    ["Backend / API layer","Backend engineers","Serves model outputs to the product.",""],
+    ["PMIP experience layer","Me · built with frontend","Turns outputs into prioritized, explainable, actionable decisions. My primary ownership.","mine"],
+    ["Operator decision","Engineers and operators","Agree, or disagree with a reason.",""],
+    ["Maintenance workflow","Maintenance teams","Scheduling and work orders, with context carried over.",""],
+    ["Human feedback","Operators → product and ML teams","Decisions and outcomes flow back to the teams that improve the models.",""]
+  ];
+  $("#stack").innerHTML = ARCH.map(function(a,i){ return '<button type="button" class="lay '+a[3]+'" data-i="'+i+'">'+a[0]+'<small>'+a[1]+'</small></button>'; }).join("");
+  var lb = $$("#stack .lay");
+  function arPick(i){ lb.forEach(function(b,j){ b.setAttribute("aria-pressed", j===i?"true":"false"); }); $("#ar-own").textContent = "Owned by · "+ARCH[i][1]; $("#ar-h").textContent = ARCH[i][0]; $("#ar-p").textContent = ARCH[i][2]; }
+  lb.forEach(function(b){ b.addEventListener("click", function(){ arPick(+b.getAttribute("data-i")); }); });
+  arPick(6);
+
+  /* Screens gallery */
+  var SCR = [
+    ["overview","Operational overview","What needs my attention right now?","Counts by severity, the one prediction awaiting a decision, and every asset ranked by time to failure.",0],
+    ["alert","Predictive alert · Level 1","Do I need to care?","Asset, failure, severity, window, recommended action and confidence, enough to prioritize at a glance.",0],
+    ["evidence","Evidence · Level 2","What is physically happening?","12.4 mm/s against a 2–8 mm/s normal range for 72 hours, with every signal and its sensor health.",0],
+    ["reasoning","AI reasoning · Level 3","Why does the model believe this?","87% confidence, signal influence, and 24 of 28 similar patterns ending in failure within 96 hours.",0],
+    ["health","Equipment health","How did we get here?","Four weeks of trajectory with the questions engineers ask when reading a pattern.",0],
+    ["decision","Human decision","Do I agree?","Shows which evidence levels were opened. Disagree requires one of four reasons.",0],
+    ["maintenance","Maintenance action","What should happen next?","Context preservation: asset, issue, priority, timeframe and action carried over from the alert and model.",1],
+    ["schedule","Maintenance schedule","Where does it land?","AI-raised work sits beside planned interval work, marked by its trigger.",1],
+    ["history","Resolution","What actually happened?","Prediction, decision, maintenance, finding and outcome, then feedback to the ML team.",1]
+  ];
+  var gt = $("#gtabs");
+  gt.innerHTML = SCR.map(function(s,i){ return '<button class="gtab" role="tab" type="button" id="gt'+i+'" aria-controls="gview">'+s[1]+(s[4]?' <small>Concept</small>':'')+'</button>'; }).join("");
+  var gtb = $$(".gtab", gt), gi = 0;
+  function gPick(i){
+    gi = i; sel(gtb,i); var s = SCR[i];
+    $("#g-img").src = IMGS[s[0]]; $("#g-img").alt = s[1]+" screen";
+    $("#g-n").textContent = (i+1)+" of "+SCR.length+" · "+s[1]; $("#g-q").textContent = s[2]; $("#g-p").textContent = s[3]; $("#g-c").hidden = !s[4];
+    $("#gview").setAttribute("aria-labelledby","gt"+i);
+    var tb = gtb[i]; if(tb.offsetLeft < gt.scrollLeft || tb.offsetLeft+tb.offsetWidth > gt.scrollLeft+gt.clientWidth) gt.scrollLeft = tb.offsetLeft-8;
+  }
+  tablist(gtb, gPick);
+  $("#g-prev").addEventListener("click", function(){ gPick((gi-1+SCR.length)%SCR.length); });
+  $("#g-next").addEventListener("click", function(){ gPick((gi+1)%SCR.length); });
+  var sx = null, gv = $("#gview .shot");
+  gv.addEventListener("touchstart", function(e){ sx = e.touches[0].clientX; }, {passive:true});
+  gv.addEventListener("touchend", function(e){ if(sx===null) return; var dx = e.changedTouches[0].clientX - sx; if(Math.abs(dx)>50) gPick((gi+(dx<0?1:-1)+SCR.length)%SCR.length); sx = null; });
+  gPick(0);
+
+  /* Testing ladder */
+  var TEST = [
+    ["Identify the asset that needs the most immediate attention","Dashboard","overview","Does the hierarchy do the first triage?"],
+    ["Explain why the system believes this equipment is at risk","AI reasoning","reasoning","Can the engineer put the model's reasoning in their own words?"],
+    ["Identify which sensor appears abnormal","Evidence","evidence","Is the physical evidence readable without help?"],
+    ["Determine how confident the model is","Alert summary","alert","Is confidence visible, and read in context?"],
+    ["Decide whether you agree with the recommendation","Human decision","decision","Does the engineer feel able to agree or disagree?"],
+    ["Continue into the appropriate maintenance action","Maintenance action","maintenance","Does the decision flow into action without re-entry?"]
+  ];
+  $("#tasks").innerHTML = TEST.map(function(t){ return '<li><b>'+t[0]+'</b><small>Screen · '+t[1]+'</small><p>What it checks: '+t[3]+'</p></li>'; }).join("");
+
+  /* Insight map */
+  var im = $("#imap"), ib = $$("#imap .ins");
+  function iPick(b){
+    var on = b.getAttribute("aria-pressed")!=="true";
+    ib.forEach(function(x){ x.setAttribute("aria-pressed","false"); x.classList.remove("on"); });
+    $$("#imap .pr, #imap .wh").forEach(function(x){ x.classList.remove("on"); });
+    if(!on){ im.removeAttribute("data-on"); return; }
+    b.setAttribute("aria-pressed","true"); b.classList.add("on"); im.setAttribute("data-on","");
+    b.getAttribute("data-p").split(",").forEach(function(k){ $('#imap .pr[data-k="'+k+'"]').classList.add("on"); });
+    b.getAttribute("data-w").split(",").forEach(function(k){ $('#imap .wh[data-k="'+k+'"]').classList.add("on"); });
+  }
+  ib.forEach(function(b){ b.addEventListener("click", function(){ iPick(b); }); });
+  iPick(ib[0]);
+
+  /* IA canvas */
+  (function(){
+    var G = $("#ia-g"), W = 1500, H = 860, out = "";
+    function box(x,y,w,h,cls,txt,r){ return '<g class="'+cls+'"><rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+(r||7)+'"/><text x="'+(x+14)+'" y="'+(y+h/2+5)+'">'+txt+'</text></g>'; }
+    out += box(640,30,220,52,"ia-root","PMIP",10);
+    out += box(180,36,420,40,"ia-glob","Global bar · site selector · live sync · shift",8);
+    out += '<path class="ia-tree" d="M600 56 H640"/>';
+    var cols = [
+      ["Dashboard",[["KPI summary · 5 counts",1],["Attention card · M-204",1,"att"],["Equipment health table",1],["Severity filters",2],["Fleet condition",1],["Failures by window",1],["Scheduled maintenance",1]]],
+      ["Equipment",[["Equipment health · per asset",1,"eh"],["Status and details",2],["Health trajectory",2],["Tab · Sensor trends",2],["Tab · Maintenance history",2],["Tab · AI evidence",2]]],
+      ["Alerts",[["Alert detail · M-204",1,"al"],["L1 · Alert summary",2],["L2 · Evidence",2],["L3 · AI reasoning",2],["Human decision",1,"dec"],["Agree",2],["Disagree + reason",2]]],
+      ["Maintenance",[["Create maintenance action",1,"cma"],["Work order preview",2],["Schedule",1,"sch"],["Resolution",1,"res"],["Recent resolutions",2]]],
+      ["Analytics",[["Out of scope here",1]],1]
+    ];
+    var x0 = 40, cw = 250, gap = 34, ny = 150, pos = {};
+    cols.forEach(function(c,i){
+      var x = x0 + i*(cw+gap), off = c[2];
+      out += '<path class="ia-tree" d="M750 82 V112 H'+(x+cw/2)+' V'+ny+'"/>';
+      out += box(x,ny,cw,50,"ia-nav"+(off?" off":""),c[0],8);
+      var y = ny+72;
+      c[1].forEach(function(it){
+        var l2 = it[1]===2, ix = x + (l2?22:0), w = cw - (l2?22:0), h = 40;
+        out += '<path class="ia-tree" d="M'+(x+10)+' '+(y-22)+' V'+(y+h/2)+' H'+ix+'"/>';
+        out += box(ix,y,w,h,"ia-item"+((l2||off)?" l2":"")+(it[2]?" key":""),it[0],6);
+        if(it[2]) pos[it[2]] = {x:ix,y:y,w:w,h:h};
+        y += h + 10;
+      });
+    });
+    out += box(1210,700,250,46,"ia-ext","Feedback to product + ML",8);
+    pos.ml = {x:1210,y:700,w:250,h:46};
+    var links = "";
+    function across(a,b,lab){
+      var A = pos[a], B = pos[b], x1 = A.x+A.w, y1 = A.y+A.h/2, x2 = B.x, y2 = B.y+B.h/2, mx = (x1+x2)/2;
+      links += '<path class="ia-link" marker-end="url(#ia-arr)" d="M'+x1+' '+y1+' C'+mx+' '+y1+' '+mx+' '+y2+' '+(x2-3)+' '+y2+'"/>';
+      if(lab) links += '<text class="ia-lab" x="'+(mx+6)+'" y="'+((y1+y2)/2+30)+'">'+lab+'</text>';
+    }
+    function side(a,b){
+      var A = pos[a], B = pos[b], x1 = A.x+A.w, y1 = A.y+A.h/2, x2 = B.x+B.w, y2 = B.y+B.h/2;
+      links += '<path class="ia-link" marker-end="url(#ia-arr)" d="M'+x1+' '+y1+' C'+(x1+26)+' '+y1+' '+(x2+26)+' '+y2+' '+(x2+3)+' '+y2+'"/>';
+    }
+    (function(){ var A = pos.att, B = pos.al, x1 = A.x+A.w, y1 = A.y+A.h/2;
+      links += '<path class="ia-link" marker-end="url(#ia-arr)" d="M'+x1+' '+y1+' H'+(x1+14)+' V211 H'+(B.x+40)+' V'+(B.y-3)+'"/>'; })();
+    (function(){ var A = pos.al, B = pos.eh, y = A.y+A.h/2;
+      links += '<path class="ia-link" marker-end="url(#ia-arr)" d="M'+A.x+' '+y+' H'+(B.x+B.w+3)+'"/>'; })();
+    across("dec","cma","Agree");
+    side("cma","sch"); side("sch","res");
+    across("res","ml","");
+    out += links;
+    out += '<g class="ia-leg" transform="translate(40,820)"><rect width="16" height="10" rx="2" y="-9" fill="var(--accent)"/><text x="24">Section</text><rect x="110" width="16" height="10" rx="2" y="-9" fill="var(--bg)" stroke="var(--line-2)"/><text x="134">Screen or component</text><path class="ia-link" d="M310 -4 H350"/><text x="358">Decision journey</text><rect x="500" width="16" height="10" rx="2" y="-9" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.6"/><text x="524">Journey stop</text></g>';
+    $("#ia-svg").insertAdjacentHTML("afterbegin",'<defs><marker id="ia-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3d3d3f"/></marker></defs>');
+    G.innerHTML = out;
+
+    var cv = $("#ia"), st = {k:1, x:0, y:0}, minK = .12, maxK = 2.5;
+    function apply(){ G.setAttribute("transform","translate("+st.x+" "+st.y+") scale("+st.k+")"); $("#ia-z").textContent = Math.round(st.k*100)+"%"; }
+    function fit(){ var r = cv.getBoundingClientRect(); var k = Math.min((r.width-24)/W, (r.height-60)/H); st.k = Math.max(minK, Math.min(1, k)); st.x = (r.width - W*st.k)/2; st.y = Math.max(12,(r.height - H*st.k)/2 - 10); apply(); }
+    function zoomAt(f, cx, cy){ var r = cv.getBoundingClientRect(); if(cx==null){ cx = r.width/2; cy = r.height/2; } var nk = Math.max(minK, Math.min(maxK, st.k*f)); var gx = (cx - st.x)/st.k, gy = (cy - st.y)/st.k; st.k = nk; st.x = cx - gx*nk; st.y = cy - gy*nk; apply(); }
+    $("#ia-in").addEventListener("click", function(){ zoomAt(1.25); });
+    $("#ia-out").addEventListener("click", function(){ zoomAt(0.8); });
+    $("#ia-fit").addEventListener("click", fit);
+    cv.addEventListener("wheel", function(e){ if(!(e.ctrlKey||e.metaKey)) return; e.preventDefault(); var r = cv.getBoundingClientRect(); zoomAt(e.deltaY<0?1.12:0.89, e.clientX-r.left, e.clientY-r.top); }, {passive:false});
+    var ptrs = {}, last = null, pinch = null;
+    cv.addEventListener("pointerdown", function(e){ if(e.target.closest(".ctrl")) return; try{ cv.setPointerCapture(e.pointerId); }catch(_){} ptrs[e.pointerId] = {x:e.clientX,y:e.clientY}; cv.classList.add("drag"); last = {x:e.clientX,y:e.clientY}; pinch = null; });
+    cv.addEventListener("pointermove", function(e){
+      if(!ptrs[e.pointerId]) return; ptrs[e.pointerId] = {x:e.clientX,y:e.clientY};
+      var ids = Object.keys(ptrs);
+      if(ids.length===2){ var a = ptrs[ids[0]], b = ptrs[ids[1]], d = Math.hypot(a.x-b.x,a.y-b.y), r = cv.getBoundingClientRect();
+        if(pinch){ zoomAt(d/pinch, (a.x+b.x)/2-r.left, (a.y+b.y)/2-r.top); } pinch = d; return; }
+      if(last){ st.x += e.clientX-last.x; st.y += e.clientY-last.y; last = {x:e.clientX,y:e.clientY}; apply(); }
+    });
+    function up(e){ delete ptrs[e.pointerId]; var ks = Object.keys(ptrs); if(!ks.length){ cv.classList.remove("drag"); last = null; pinch = null; } else { last = {x:ptrs[ks[0]].x,y:ptrs[ks[0]].y}; pinch = null; } }
+    cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+    cv.addEventListener("keydown", function(e){
+      var m = 40, k = e.key;
+      if(k==="ArrowLeft") st.x += m; else if(k==="ArrowRight") st.x -= m; else if(k==="ArrowUp") st.y += m; else if(k==="ArrowDown") st.y -= m;
+      else if(k==="+"||k==="="){ zoomAt(1.25); e.preventDefault(); return; } else if(k==="-"){ zoomAt(.8); e.preventDefault(); return; } else if(k==="0"){ fit(); e.preventDefault(); return; } else return;
+      e.preventDefault(); apply();
+    });
+    fit(); window.addEventListener("resize", fit);
+  })();
+
+  /* Contents scroll-spy */
+  var links = $$(".toc a[href^='#']").filter(function(a){ return a.getAttribute("href")!=="#top"; });
+  var secs = links.map(function(a){ return document.getElementById(a.getAttribute("href").slice(1)); });
+  function spy(){
+    var y = window.innerHeight*0.3, cur = 0;
+    secs.forEach(function(s,i){ if(s && s.getBoundingClientRect().top < y) cur = i; });
+    links.forEach(function(a,i){ if(i===cur) a.setAttribute("aria-current","true"); else a.removeAttribute("aria-current"); });
+    var al = links[cur]; if(al && window.innerWidth<=1100){ var ol = al.closest("ol"); var l = al.offsetLeft - 24; if(Math.abs(ol.scrollLeft - l) > 40) ol.scrollTo({left:l}); }
+  }
+  window.addEventListener("scroll", spy, {passive:true}); spy();
+})();
+</script>
+
+</body>
+</html>
