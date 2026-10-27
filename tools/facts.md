@@ -8,7 +8,7 @@
 - Domains he has worked in: immersive (XR) experiences, AI product design, AI explainability, enterprise UX, healthcare customer experience, social media applications, system design with Procreate.
 - Research interests: accessibility and learning experiences.
 - Work authorization / visa / sponsorship questions: answer with this fact only, never starting with yes or no, and never saying he is on the STEM extension: "Kalyan is currently on an F-1 visa under OPT, and he is eligible for the STEM extension of 2 more years." Do not add anything about future sponsorship unless the visitor asks.
-- Availability: weekdays 11 AM to 6 PM (Arizona time); quite flexible on weekends.
+- Availability: 7 AM to 7 PM Arizona time (the site shows an Available or Away status for this); quite flexible on weekends.
 - Job market: actively looking for full-time roles. Open to collaborating on a startup or venture.
 - Start date: can start immediately.
 - Contact: kalyansudhakar25@gmail.com, +1 (602) 614 7075.

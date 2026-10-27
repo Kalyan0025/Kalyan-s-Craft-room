@@ -197,6 +197,11 @@ body.hm #dock{left:16px;right:auto;top:auto;bottom:calc(58px + env(safe-area-ins
 body.hm #socials{display:flex;left:16px;right:auto;bottom:calc(20px + env(safe-area-inset-bottom,0px));gap:16px}
 body.hm nav a::before{display:none}body.hm nav a{padding-right:0}#dock{gap:10px}
 #dock button::before{display:none}#dock #askBtn{color:var(--accent);font-size:15px}#dock #askBtn .tx{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}#dock #askBtn:hover,#dock #askBtn:focus-visible,#dock #askBtn[aria-expanded=true]{color:var(--accent);opacity:.8}}
+#rm{position:fixed;right:max(24px,env(safe-area-inset-right,0px));top:calc(22px + env(safe-area-inset-top,0px));z-index:3;text-align:right;font-size:14px;line-height:21px;color:var(--muted);pointer-events:none;font-variant-numeric:tabular-nums}
+#rm b{font-weight:400;color:var(--ink)}#rm .st{display:flex;align-items:center;justify-content:flex-end;gap:7px;margin-top:3px}
+#rm .st i{width:7px;height:7px;background:#9aa0a6;flex:none}#rm.on .st i{background:#2fa84f;animation:sqp 2.4s ease-in-out infinite}#rm.on .st b{color:#2f8f4a}
+body.rvo #rm{display:none}
+@media(max-width:700px){#rm{right:max(16px,env(safe-area-inset-right,0px));font-size:12px;line-height:18px}}
 </style>
 <div class="stage"><canvas id="c" aria-label="An isometric room where Gomma moves between a desk, a whiteboard, an easel and a pull-up bar, with a garden swaying in the wind"></canvas></div>
 <div class="name"><svg class="mark" viewBox="0 100 500 320" aria-hidden="true" fill="none" stroke-width="22" stroke-linecap="butt" stroke-linejoin="miter"><g transform="translate(0 0)" stroke="#a3a9af"><line x1="24" y1="292" x2="322" y2="124"/><line x1="182" y1="206" x2="182" y2="382"/><line x1="24" y1="292" x2="332" y2="292"/><line x1="182" y1="208" x2="478" y2="208"/><line x1="182" y1="382" x2="478" y2="212"/></g></svg><span>Kalyan's CraftRoom</span></div>
@@ -209,6 +214,7 @@ body.hm nav a::before{display:none}body.hm nav a{padding-right:0}#dock{gap:10px}
 </nav>
 <div id="scroller"><div class="snap" id="home"></div><div class="snap" id="work" style="height:160vh"></div><div class="snap" id="play"></div><div class="snap" id="doodles"></div><div class="snap" id="about" style="height:320vh"></div></div>
 
+<div id="rm" aria-label="Room status"><div>Room time <b id="rmT">--:--</b></div><div id="rmC" hidden>Room temp <b id="rmK"></b></div><div class="st"><i aria-hidden="true"></i><b id="rmS">Away</b></div></div>
 <div id="dock"><button id="askBtn" aria-expanded="false" aria-controls="chat"><span class="tx">Ask Gomma</span> <span class="ar" aria-hidden="true">↗</span></button><button id="rvBtn" class="rv">Recruiter view</button></div>
 <div id="chat" role="dialog" aria-label="Ask Gomma"><header><b class="tt"><span class="pd" aria-hidden="true"></span>Ask Gomma</b><span class="ic"><button id="cSpk" type="button" aria-label="Read answers aloud: off" aria-pressed="false" title="Read answers aloud"><svg viewBox="0 0 16 16"><path d="M2 6v4h2.500L8 13V3L4.500 6z"/><path class="w1" d="M10.500 5.800a3 3 0 010 4.400"/><path class="w2" d="M12.500 4a5.500 5.500 0 010 8"/><path class="x" d="M10.500 6l4 4M14.500 6l-4 4"/></svg></button><button id="cReset" aria-label="Restart chat"><svg viewBox="0 0 16 16"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1"/><path d="M2.5 2.2v3h3"/></svg></button><button id="cClose" aria-label="Close chat"><svg viewBox="0 0 16 16"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg></button></span></header><div class="body"><div class="msgs" id="msgs" aria-live="polite"></div><div class="empty" id="empty"><h3>Hey there, I'm Gomma, Kalyan's assistant.</h3><button class="sug"><i>↳</i>Is Kalyan available in the job market?</button><button class="sug"><i>↳</i>Can he start immediately?</button><button class="sug"><i>↳</i>Does he need visa sponsorship?</button><button class="sug"><i>↳</i>Where is he based?</button><button class="sug"><i>↳</i>How does Kalyan ideate?</button><button class="sug"><i>↳</i>What is Kalyan working on?</button></div></div><form id="cf"><div class="wv" id="cWv" hidden aria-live="polite"><i></i><i></i><i></i><i></i><i></i><span id="cWt">Listening…</span></div><input id="ci" autocomplete="off" placeholder="Ask about Kalyan…" aria-label="Your question"><button type="button" id="cMic" aria-label="Ask by voice" title="Ask by voice"><svg viewBox="0 0 16 16"><rect x="6" y="1.500" width="4" height="8" rx="2"/><path d="M3.500 7.500a4.500 4.500 0 009 0M8 12v2.500"/></svg></button><button aria-label="Send"><svg viewBox="0 0 16 16"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5"/></svg></button></form></div>
 <div id="socials" aria-label="Social links"><a href="https://www.linkedin.com/in/kalyan-sudhakar/" target="_blank" rel="noopener">LinkedIn</a><a href="https://www.instagram.com/kalyandotcom/" target="_blank" rel="noopener">Instagram</a><a href="https://x.com/Kalyan0025" target="_blank" rel="noopener">X</a></div>
@@ -1079,6 +1085,15 @@ requestAnimationFrame(loop);
     var h=ray2.intersectObjects(HB,false);if(!h.length)return null;for(var i=0;i<h.length;i++)if(h[i].object===PER)return PER;return h[0].object}
   addEventListener('pointermove',function(e){var o=pick(e);if(o){tip.textContent=o.userData.label;tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px';tip.style.opacity=1;document.body.style.cursor='pointer'}else{tip.style.opacity=0;document.body.style.cursor=''}});
   addEventListener('click',function(e){var o=pick(e);if(o){e.preventDefault();goTo(o.userData.go)}});
+})();
+/* ---------- room time, room temperature, availability ---------- */
+(function(){
+  var T=document.getElementById('rmT'),K=document.getElementById('rmK'),C=document.getElementById('rmC'),S=document.getElementById('rmS'),R=document.getElementById('rm');
+  var f=new Intl.DateTimeFormat('en-US',{timeZone:'America/Phoenix',hour:'numeric',minute:'2-digit',hour12:true}),h=new Intl.DateTimeFormat('en-US',{timeZone:'America/Phoenix',hour:'numeric',hourCycle:'h23'});
+  function tick(){var d=new Date();T.textContent=f.format(d);var hr=parseInt(h.format(d),10),on=hr>=7&&hr<19;R.classList.toggle('on',on);S.textContent=on?'Available':'Away'}
+  tick();setInterval(tick,20000);
+  function temp(){try{fetch('https://api.open-meteo.com/v1/forecast?latitude=33.42&longitude=-111.94&current=temperature_2m&temperature_unit=fahrenheit').then(function(r){return r.json()}).then(function(j){var t=j&&j.current&&j.current.temperature_2m;if(typeof t==='number'){K.textContent=Math.round(t)+'\u00b0F';C.hidden=false}}).catch(function(){})}catch(e){}}
+  temp();setInterval(temp,600000)
 })();
 window.__room={C:C,step:step,tick:tick,P:P,go:function(s){sT=s;sC=s}};
 })();
