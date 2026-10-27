@@ -1,6 +1,30 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Kalyan's CraftRoom</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2ZC3HG2MYG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-2ZC3HG2MYG');
+</script>
+<script>
+/* analytics events: which room sections get opened, Ask Gomma use, outbound links (no message text is ever sent) */
+(function(){function ev(n,p){try{gtag('event',n,p||{})}catch(e){}}
+document.addEventListener('click',function(e){var t=e.target&&e.target.closest?e.target:null;if(!t)return;
+ var a=t.closest('nav a');if(a)return ev('nav_click',{section:(a.textContent||'').trim()});
+ if(t.closest('#askBtn'))return ev('ask_gomma_open');
+ if(t.closest('#rvBtn'))return ev('recruiter_view_open');
+ var o=t.closest('#socials a,.rbtns a');if(o)return ev('outbound_click',{label:(o.textContent||'').trim(),url:o.href});
+ if(t.closest('#empty button'))return ev('ask_gomma_chip');
+ var w=t.closest('.m a');if(w&&t.closest('#chat'))return ev('ask_gomma_link',{url:w.href})},true);
+document.addEventListener('submit',function(e){if(e.target&&e.target.id==='cf')ev('ask_gomma_question')},true);
+window.addEventListener('load',function(){if(!('IntersectionObserver' in window))return;var seen={};
+ var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting&&!seen[x.target.id]){seen[x.target.id]=1;ev('section_view',{section:x.target.id})}})},{threshold:.5});
+ document.querySelectorAll('#scroller .snap').forEach(function(s){io.observe(s)})})})();
+</script>
+
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Kalyan's CraftRoom: AI product designer and design engineer. Step into the room to see the work.">
 <link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
