@@ -201,6 +201,11 @@ body.hm nav a::before{display:none}body.hm nav a{padding-right:0}#dock{gap:10px}
 #rm b{font-weight:400;color:var(--ink)}#rm .st{display:flex;align-items:center;justify-content:flex-end;gap:7px;margin-top:3px}
 #rm .st i{width:7px;height:7px;background:#9aa0a6;flex:none}#rm.on .st i{background:#2fa84f;animation:sqp 2.4s ease-in-out infinite}#rm.on .st b{color:#2f8f4a}
 body.rvo #rm{display:none}
+#rm #nmT{all:unset;box-sizing:border-box;pointer-events:auto;cursor:pointer;display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin:8px 0 0 auto;border:1px solid rgba(50,64,79,.22);background:rgba(255,255,255,.55);color:var(--ink);transition:color .2s,border-color .2s,background .2s}
+#rm #nmT:hover,#rm #nmT:focus-visible{color:var(--accent);border-color:var(--accent)}
+#rm #nmT svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+#rm #nmT .sun{display:none}#rm #nmT.nt .sun{display:block}#rm #nmT.nt .moon{display:none}
+:root.nite #rm #nmT{background:rgba(255,255,255,.06);border-color:rgba(190,205,235,.3)}
 @media(max-width:700px){#rm{right:max(16px,env(safe-area-inset-right,0px));font-size:12px;line-height:18px}}
 </style>
 <div class="stage"><canvas id="c" aria-label="An isometric room where Gomma moves between a desk, a whiteboard, an easel and a pull-up bar, with a garden swaying in the wind"></canvas></div>
@@ -214,7 +219,7 @@ body.rvo #rm{display:none}
 </nav>
 <div id="scroller"><div class="snap" id="home"></div><div class="snap" id="work" style="height:160vh"></div><div class="snap" id="play"></div><div class="snap" id="doodles"></div><div class="snap" id="about" style="height:320vh"></div></div>
 
-<div id="rm" aria-label="Room status"><div>Room time <b id="rmT">--:--</b></div><div id="rmC" hidden>Room temp <b id="rmK"></b></div><div class="st"><i aria-hidden="true"></i><b id="rmS">Away</b></div></div>
+<div id="rm" aria-label="Room status"><div>Room time <b id="rmT">--:--</b></div><div id="rmC" hidden>Room temp <b id="rmK"></b></div><div class="st"><i aria-hidden="true"></i><b id="rmS">Away</b></div><button id="nmT" type="button" aria-label="Switch room to night" aria-pressed="false" title="Day / night"><svg viewBox="0 0 16 16"><g class="sun"><circle cx="8" cy="8" r="2.8"/><path d="M8 1.5v1.8M8 12.7v1.8M1.5 8h1.8M12.7 8h1.8M3.4 3.4l1.3 1.3M11.3 11.3l1.3 1.3M12.6 3.4l-1.3 1.3M4.7 11.3l-1.3 1.3"/></g><path class="moon" d="M12.8 9.6A5.2 5.2 0 016.4 3.2a5.2 5.2 0 106.4 6.4z"/></svg></button></div>
 <div id="dock"><button id="askBtn" aria-expanded="false" aria-controls="chat"><span class="tx">Ask Gomma</span> <span class="ar" aria-hidden="true">↗</span></button><button id="rvBtn" class="rv">Recruiter view</button></div>
 <div id="chat" role="dialog" aria-label="Ask Gomma"><header><b class="tt"><span class="pd" aria-hidden="true"></span>Ask Gomma</b><span class="ic"><button id="cSpk" type="button" aria-label="Read answers aloud: off" aria-pressed="false" title="Read answers aloud"><svg viewBox="0 0 16 16"><path d="M2 6v4h2.500L8 13V3L4.500 6z"/><path class="w1" d="M10.500 5.800a3 3 0 010 4.400"/><path class="w2" d="M12.500 4a5.500 5.500 0 010 8"/><path class="x" d="M10.500 6l4 4M14.500 6l-4 4"/></svg></button><button id="cReset" aria-label="Restart chat"><svg viewBox="0 0 16 16"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1"/><path d="M2.5 2.2v3h3"/></svg></button><button id="cClose" aria-label="Close chat"><svg viewBox="0 0 16 16"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg></button></span></header><div class="body"><div class="msgs" id="msgs" aria-live="polite"></div><div class="empty" id="empty"><h3>Hey there, I'm Gomma, Kalyan's assistant.</h3><button class="sug"><i>↳</i>Is Kalyan available in the job market?</button><button class="sug"><i>↳</i>Can he start immediately?</button><button class="sug"><i>↳</i>Does he need visa sponsorship?</button><button class="sug"><i>↳</i>Where is he based?</button><button class="sug"><i>↳</i>How does Kalyan ideate?</button><button class="sug"><i>↳</i>What is Kalyan working on?</button></div></div><form id="cf"><div class="wv" id="cWv" hidden aria-live="polite"><i></i><i></i><i></i><i></i><i></i><span id="cWt">Listening…</span></div><input id="ci" autocomplete="off" placeholder="Ask about Kalyan…" aria-label="Your question"><button type="button" id="cMic" aria-label="Ask by voice" title="Ask by voice"><svg viewBox="0 0 16 16"><rect x="6" y="1.500" width="4" height="8" rx="2"/><path d="M3.500 7.500a4.500 4.500 0 009 0M8 12v2.500"/></svg></button><button aria-label="Send"><svg viewBox="0 0 16 16"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5"/></svg></button></form></div>
 <div id="socials" aria-label="Social links"><a href="https://www.linkedin.com/in/kalyan-sudhakar/" target="_blank" rel="noopener">LinkedIn</a><a href="https://www.instagram.com/kalyandotcom/" target="_blank" rel="noopener">Instagram</a><a href="https://x.com/Kalyan0025" target="_blank" rel="noopener">X</a></div>
@@ -236,7 +241,7 @@ var cam=new T.OrthographicCamera(-10,10,6,-6,.1,200);
 var EL=.5,AZ=Math.PI/4,TARGET=new T.Vector3(0,.55,0);
 cam.position.set(Math.cos(EL)*Math.cos(AZ)*40,TARGET.y+Math.sin(EL)*40,Math.cos(EL)*Math.sin(AZ)*40);
 cam.lookAt(TARGET);cam.updateMatrixWorld();
-scene.add(new T.AmbientLight(0xffffff,.5));
+var amb=new T.AmbientLight(0xffffff,.5);scene.add(amb);var OC={value:new T.Vector3(.196,.251,.31)},DM={value:new T.Vector3(1,1,1)},NW={value:0};
 var dl=new T.DirectionalLight(0xffffff,.4);dl.position.set(3,6,5);scene.add(dl);
 var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -248,9 +253,9 @@ var M={skin:toon('#b9763b'),skin2:toon('#9f6330'),shirt:toon('#f1eee8'),pants:to
   hair:toon('#15171d'),white:toon('#fbfbf8'),dark:toon('#14161c'),silver:toon('#b9bec6'),lip:toon('#8d4a33'),
   wood:toon('#d6b98a'),wood2:toon('#b8975f'),grey:toon('#cfc9bd'),grey2:toon('#a9a396'),board:toon('#fbf8ee'),orange:toon('#e5581a'),floor:toon('#efe8d6')};
 var INKC=0x1c2433,olCache={};
-function olMat(th){if(!olCache[th])olCache[th]=new T.ShaderMaterial({uniforms:{th:{value:th}},side:T.BackSide,
+function olMat(th){if(!olCache[th])olCache[th]=new T.ShaderMaterial({uniforms:{th:{value:th},oc:OC},side:T.BackSide,
   vertexShader:'uniform float th;void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*th,1.0);}',
-  fragmentShader:'void main(){gl_FragColor=vec4(0.196,0.251,0.31,1.0);}'});return olCache[th]}
+  fragmentShader:'uniform vec3 oc;void main(){gl_FragColor=vec4(oc,1.0);}'});return olCache[th]}
 
 /* ---------- builders ---------- */
 function J(p,x,y,z){var g=new T.Group();g.position.set(x||0,y||0,z||0);p.add(g);return g}
@@ -417,7 +422,7 @@ var U={t:{value:0},amp:{value:.5},wd:{value:new T.Vector3(.8,0,.6)},camF:{value:
 function loadTex(src,near){var t=new T.Texture();var im=new Image();im.onload=function(){t.image=im;t.needsUpdate=true};im.src=src;
   t.minFilter=t.magFilter=near?T.NearestFilter:T.LinearFilter;t.generateMipmaps=false;t.wrapS=t.wrapT=T.ClampToEdgeWrapping;return t}
 var TB=loadTex(IMG.base),TO=loadTex(IMG.org),TF=loadTex(IMG.fld,true);
-var wallFS=['precision mediump float;varying vec2 vUv;uniform sampler2D tb,to,tf;uniform vec4 uvT;uniform float t,amp,shade;uniform vec2 res;',
+var wallFS=['precision mediump float;varying vec2 vUv;uniform sampler2D tb,to,tf;uniform vec4 uvT;uniform float t,amp,shade,nw;uniform vec2 res;',
 'vec2 flow(vec2 q,float s){return s*vec2(sin(q.y*9.+t*.5+sin(q.x*5.+t*.35)*1.5),cos(q.x*8.+t*.45+sin(q.y*6.-t*.3)*1.5));}',
 'void main(){vec2 uv=vec2(vUv.x*uvT.x+uvT.z,vUv.y*uvT.y+uvT.w);',
 ' vec4 f=texture2D(tf,uv);float sp=(f.r*256.+f.g)*255.;float an=f.b*6.2831853-3.1415927;',
@@ -425,12 +430,12 @@ var wallFS=['precision mediump float;varying vec2 vUv;uniform sampler2D tb,to,tf
 ' float ph=sp*.0369-t*1.1;float pos=mod(t*60.,2400.)-300.;float bo=exp(-pow((sp-pos)/170.,2.));',
 ' float px=(2.6+12.*bo)*amp*2.0*f.a;',
 ' vec2 d=(nv*sin(ph)*px+tv*cos(ph)*px*.4)/res+flow(uv,.0006*amp*2.);',
-' vec3 col=texture2D(tb,uv+flow(uv,.0017*amp*2.)).rgb;float Lm=dot(col,vec3(.3333));col=mix(vec3(.85,.865,.9),vec3(.6,.63,.69),smoothstep(.912,.945,Lm));',
-' float a=texture2D(to,uv+d).a;col=mix(col,vec3(.902,.373,.18),a);',
+' vec3 col=texture2D(tb,uv+flow(uv,.0017*amp*2.)).rgb;float Lm=dot(col,vec3(.3333));col=mix(vec3(.85,.865,.9),vec3(.6,.63,.69),smoothstep(.912,.945,Lm));col=mix(col,mix(vec3(.085,.105,.185),vec3(.05,.065,.125),smoothstep(.912,.945,Lm)),nw);',
+' float a=texture2D(to,uv+d).a;col=mix(col,mix(vec3(.902,.373,.18),vec3(.2,.36,.78),nw),a);',
 ' float ao=.86+.14*smoothstep(0.,.5,vUv.y);',
-' gl_FragColor=vec4(col*ao*shade,1.);}'].join('\n');
+' gl_FragColor=vec4(col*ao*shade*mix(1.,.8,nw),1.);}'].join('\n');
 function wall(shade,flip,fy){
-  var mt=new T.ShaderMaterial({uniforms:{tb:{value:TB},to:{value:TO},tf:{value:TF},uvT:{value:new T.Vector4(flip?-1:1,.376,flip?1:0,1-fy-.376)},t:U.t,amp:U.amp,shade:{value:shade},res:{value:new T.Vector2(1000,698)}},
+  var mt=new T.ShaderMaterial({uniforms:{tb:{value:TB},to:{value:TO},tf:{value:TF},uvT:{value:new T.Vector4(flip?-1:1,.376,flip?1:0,1-fy-.376)},t:U.t,amp:U.amp,nw:NW,shade:{value:shade},res:{value:new T.Vector2(1000,698)}},
     vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:wallFS});
   return new T.Mesh(new T.PlaneGeometry(2*H,D),mt)}
 var wA=wall(1.0,false,.22);wA.position.set(0,D/2,-H);scene.add(wA);                 // back wall, faces +z
@@ -580,10 +585,10 @@ var GLSL=['uniform float t,amp;uniform vec3 wd;uniform vec3 camF,camR,camU;',
 ' for(int i=0;i<10;i++){float fi=float(i);float rest=idxF-fi;if(rest<=0.)break;float s=min(rest,1.);float u=(fi+1.)/10.;',
 '  th=a0+cu*u+sin(t*2.1*st+ph+u*3.)*.1*amp*u;p+=(dirH*sin(th)+vec3(0.,cos(th),0.))*seg*s;}',
 ' float uE=idxF/10.;p+=wd*(w*st*len*pow(uE,1.6)*.4)+vec3(-wd.z,0.,wd.x)*sin(t*1.7*st+ph)*.03*len*uE*amp;thOut=th;return p;}'].join('\n');
-var bladeMat=new T.ShaderMaterial({transparent:true,uniforms:{t:U.t,amp:U.amp,wd:U.wd,camF:U.camF,camR:U.camR,camU:U.camU},
+var bladeMat=new T.ShaderMaterial({transparent:true,uniforms:{dm:DM,t:U.t,amp:U.amp,wd:U.wd,camF:U.camF,camR:U.camR,camU:U.camU},
  vertexShader:GLSL+'attribute float aIdx;attribute vec3 aRoot;attribute vec4 aP;attribute vec4 aQ;attribute vec4 aC;varying vec4 vC;void main(){float th;vec3 p=stem(aRoot,aP.x,aP.y,aP.z,aP.w,aQ.x,aQ.y,aIdx,th);vC=aC;gl_Position=projectionMatrix*viewMatrix*vec4(p,1.);}',
- fragmentShader:'precision mediump float;varying vec4 vC;void main(){gl_FragColor=vC;}'});
-var leafMat=new T.ShaderMaterial({transparent:false,side:T.DoubleSide,uniforms:{t:U.t,amp:U.amp,wd:U.wd,camF:U.camF,camR:U.camR,camU:U.camU},
+ fragmentShader:'precision mediump float;varying vec4 vC;uniform vec3 dm;void main(){gl_FragColor=vec4(vC.rgb*dm,vC.a);}'});
+var leafMat=new T.ShaderMaterial({transparent:false,side:T.DoubleSide,uniforms:{dm:DM,t:U.t,amp:U.amp,wd:U.wd,camF:U.camF,camR:U.camR,camU:U.camU},
  vertexShader:GLSL+['attribute vec2 aLoc;attribute vec3 aRoot;attribute vec4 aP;attribute vec4 aQ;attribute vec4 aL;attribute vec3 aCol;varying vec3 vC;varying float vE;',
  'void main(){float th;vec3 pos;vec3 p;',
  ' if(aL.y<.5){ p=stem(aRoot,aP.x,aP.y,aP.z,aP.w,aQ.x,aQ.y,aQ.z*10.,th);',
@@ -593,7 +598,7 @@ var leafMat=new T.ShaderMaterial({transparent:false,side:T.DoubleSide,uniforms:{
  '  float a=clamp(sin(t*aL.w+aQ.y)*1.5+.55,0.,1.);a=a*a*(3.-2.*a);float r=aL.x*(.35+.65*a)*step(.03,a);float an=aL.z+aQ.y;',
  '  vec3 dc=camR*cos(an)+camU*sin(an);vec3 lt=camR*(-sin(an))+camU*cos(an);pos=p+dc*aLoc.y*r+lt*aLoc.x*r;vE=0.;}',
  ' vC=aCol;gl_Position=projectionMatrix*viewMatrix*vec4(pos,1.);}'].join('\n'),
- fragmentShader:'precision mediump float;varying vec3 vC;varying float vE;void main(){gl_FragColor=vec4(vC*(1.-.12*vE),1.);}'});
+ fragmentShader:'precision mediump float;varying vec3 vC;varying float vE;uniform vec3 dm;void main(){gl_FragColor=vec4(vC*(1.-.12*vE)*dm,1.);}'});
 var GR=rnd(23);
 function rr(a,b){return a+(b-a)*GR()}
 function hex(h){var c=new T.Color(h);return [c.r,c.g,c.b]}
@@ -719,7 +724,8 @@ charG.position.set(C.x,0,C.z);charG.rotation.y=C.head;
 function angLerp(a,b,k){var d=Math.atan2(Math.sin(b-a),Math.cos(b-a));return a+d*k}
 function setPoseName(n){poseName=n;tgt=P[n]}
 setPoseName('type');
-function pickNext(){var tot=0;KEYS.forEach(function(k){if(k!==C.cur)tot+=ACT[k].w});var r=Math.random()*tot,n=C.cur;
+var SLP=false,SLPp=false;
+function pickNext(){if(SLP)return 'sleep';var tot=0;KEYS.forEach(function(k){if(k!==C.cur)tot+=ACT[k].w});var r=Math.random()*tot,n=C.cur;
   for(var i=0;i<KEYS.length;i++){var k=KEYS[i];if(k===C.cur)continue;r-=ACT[k].w;if(r<=0){n=k;break}}return n}
 function avoid(pts){return pts;var cx=BEAN.x,cz=BEAN.z,R=.7,out=[];
   var cur=[C.x,C.z];
@@ -737,6 +743,8 @@ function startWalk(){
 function step(dt){
   var sp0=0;
   if(C.mode==='station'){
+    if(SLP!==SLPp){SLPp=SLP;if(!SLP&&C.cur==='sleep')C.timer=.4}
+    if(SLP){if(C.cur!=='sleep'){if(C.timer>.2)C.timer=.2}else C.timer=99}
     C.timer-=dt;var s=ACT[C.cur];
     C.head=angLerp(C.head,s.head,1-Math.exp(-dt*4));
     var k=1-Math.exp(-dt*s.k);var ox=C.x,oz=C.z;C.x+=(s.pos.x-C.x)*k;C.z+=(s.pos.z-C.z)*k;sp0=Math.hypot(C.x-ox,C.z-oz)/dt;
@@ -990,8 +998,49 @@ function onScroll(){var MB=!NAVW_NOW;if(MB!==LMB){LMB=MB;setH()}PANN=Math.max(6,
 addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll);onScroll();
 (function(){var h=(location.hash||'').slice(1),i=['home','work','play','doodles','about'].indexOf(h);if(i>0){window.scrollTo(0,YS[i]*vh());onScroll();sC=sT}})();
 var last=performance.now(),clock=reduce?4:0;
+/* ---------- night: dark blue-grey room, cool lamp glow, Kalyan asleep ---------- */
+var NIGHT=(function(){
+  var NO=null,NT=0,RVF=1,NF=-1,BM=null,tgtN=false;
+  var LX=DESK.x+.42,LZ=DESK.z-.2;
+  var lamp=new T.Group();PW.add(lamp);
+  mesh(lamp,new T.CylinderGeometry(.06,.065,.02,22,1),CA.metal2,LX,.77,LZ,.006);
+  mesh(lamp,new T.BoxGeometry(.014,.3,.014),CA.metal2,LX,.92,LZ,.005);
+  var shM=new T.MeshToonMaterial({color:'#e4e7ec',gradientMap:grad,emissive:new T.Color(0,0,0),side:T.DoubleSide});
+  var sh=mesh(lamp,new T.CylinderGeometry(.035,.095,.11,22,1,true),shM,LX-.04,1.08,LZ+.02,0);sh.rotation.z=.18;
+  var bulbM=new T.MeshBasicMaterial({color:0xf2f6ff});mesh(lamp,new T.SphereGeometry(.028,12,9),bulbM,LX-.05,1.05,LZ+.02,0);bulbM.userData.keep=1;
+  var lampL=new T.PointLight(0x9ec3ff,0,4.2,1.7);lampL.position.set(LX-.1,.98,LZ+.12);scene.add(lampL);
+  var scrL=new T.PointLight(0x8fb2ff,0,2.8,1.8);scrL.position.set(DESK.x,1,DESK.z+.45);scene.add(scrL);
+  var lineMat=null;scene.traverse(function(o){if(o.isLineLoop)lineMat=o.material});
+  function L(a,b,k){return a+(b-a)*k}
+  function nowNight(){var h=parseInt(new Intl.DateTimeFormat('en-US',{timeZone:'America/Phoenix',hour:'numeric',hourCycle:'h23'}).format(new Date()),10);return h<7||h>=19}
+  function collect(){BM=[];var seen={};scene.traverse(function(o){var ms=o.material;if(!ms)return;(Array.isArray(ms)?ms:[ms]).forEach(function(m){if(!m||!m.isMeshBasicMaterial||seen[m.uuid]||m.visible===false||m.map===GRIDTX||(m.userData&&m.userData.keep))return;seen[m.uuid]=1;BM.push({m:m,c:m.color.clone()})})})}
+  var root=document.documentElement,btn=document.getElementById('nmT'),SC=null;
+  function css(nf){var p=[245,245,245],q=[11,16,32];root.style.setProperty('--page','rgb('+p.map(function(v,i){return Math.round(L(v,q[i],nf))}).join(',')+')');
+    root.style.setProperty('--ink','rgb('+[50,64,79].map(function(v,i){return Math.round(L(v,[212,220,240][i],nf))}).join(',')+')');
+    root.style.setProperty('--muted','rgba('+[50,64,79].map(function(v,i){return Math.round(L(v,[170,185,215][i],nf))}).join(',')+','+L(.42,.55,nf).toFixed(2)+')');
+    root.classList.toggle('nite',nf>.5)}
+  function apply(nf){
+    if(!BM)collect();
+    var tr=L(1,.17,nf),tg=L(1,.2,nf),tb=L(1,.34,nf);
+    BM.forEach(function(o){o.m.color.setRGB(o.c.r*tr,o.c.g*tg,o.c.b*tb)});
+    NW.value=nf;
+    amb.color.setRGB(L(1,.3,nf),L(1,.38,nf),L(1,.66,nf));amb.intensity=L(.5,.62,nf);
+    dl.color.setRGB(L(1,.5,nf),L(1,.62,nf),L(1,.95,nf));dl.intensity=L(.4,.3,nf);
+    OC.value.set(L(.196,.03,nf),L(.251,.045,nf),L(.31,.1,nf));DM.value.set(L(1,.3,nf),L(1,.36,nf),L(1,.58,nf));
+    shM.emissive.setRGB(.33*nf,.5*nf,.82*nf);lampL.intensity=1.0*nf;scrL.intensity=.35*nf}
+  if(btn)btn.addEventListener('click',function(){NO=tgtN?0:1});
+  function upd(dt){
+    tgtN=NO!==null?!!NO:nowNight();SLP=tgtN;
+    NT+=((tgtN?1:0)-NT)*(1-Math.exp(-dt*1.4));if(Math.abs((tgtN?1:0)-NT)<.002)NT=tgtN?1:0;
+    var x=Math.max(0,Math.min(1,(sC-.02)/.48)),fs=1-x*x*(3-2*x);
+    var rv=document.body.classList.contains('rvo')?0:1;RVF+=(rv-RVF)*Math.min(1,dt*5);
+    var nf=NT*fs*RVF;
+    if(Math.abs(nf-NF)>.002||(nf===0&&NF!==0)){NF=nf;apply(nf)}
+    if(btn){btn.classList.toggle('nt',tgtN);btn.setAttribute('aria-pressed',tgtN?'true':'false');var l=tgtN?'Switch room to day':'Switch room to night';if(btn.getAttribute('aria-label')!==l){btn.setAttribute('aria-label',l)}}}
+  return {upd:upd}
+})();
 function loop(now){requestAnimationFrame(loop);var dt=Math.min(.05,(now-last)/1000);last=now;if(reduce)dt*=.3;clock+=dt;
-  camUpd(dt);layout();U.t.value=clock;tick(dt,clock);ren.render(scene,cam)}
+  camUpd(dt);layout();U.t.value=clock;NIGHT.upd(dt);tick(dt,clock);ren.render(scene,cam)}
 requestAnimationFrame(loop);
 
 /* ---------- dock: Ask Gomma + recruiter view; clickable props ---------- */
@@ -1080,7 +1129,7 @@ requestAnimationFrame(loop);
   hb(.4,1.25,.55,2.1,2.5,.5,2,'Play');hb(-1.3,.2,1.05,1.5,.4,.5,2,'Play');
   hb(-2.975,.3,1.4,2,.7,1,4,'About');hb(-H+.05,1.35,1.5,.3,.9,.7,4,'About');
   var PER=hb(0,.9,0,.7,1.8,.7,4,'About');
-  function pick(e){if(sC>.12||e.clientX<NAVW_NOW)return null;var tg=e.target;if(tg&&tg.closest&&tg.closest('#dock,#chat,#recruiter,nav'))return null;
+  function pick(e){if(sC>.12||e.clientX<NAVW_NOW)return null;var tg=e.target;if(tg&&tg.closest&&tg.closest('#dock,#chat,#recruiter,nav,#rm'))return null;
     PER.position.set(C.x,.9,C.z);scene.updateMatrixWorld(true);var r=cv.getBoundingClientRect();nd.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);ray2.setFromCamera(nd,cam);
     var h=ray2.intersectObjects(HB,false);if(!h.length)return null;for(var i=0;i<h.length;i++)if(h[i].object===PER)return PER;return h[0].object}
   addEventListener('pointermove',function(e){var o=pick(e);if(o){tip.textContent=o.userData.label;tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px';tip.style.opacity=1;document.body.style.cursor='pointer'}else{tip.style.opacity=0;document.body.style.cursor=''}});
