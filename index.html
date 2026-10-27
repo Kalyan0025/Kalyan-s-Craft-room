@@ -139,7 +139,7 @@ canvas{display:block;width:100%;height:100%}
 #chat .wv span{margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:rgba(50,64,79,.75)}
 @keyframes bar{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1.5)}}
 #chat form.lis #ci{display:none}
-#chat .m.th{color:var(--muted)}#chat .m .dg{margin-top:10px}#chat .m .dg svg{width:100%;height:auto;display:block}#chat .m{max-width:94%;font-size:15px;line-height:21px}#chat .m.u{align-self:flex-end;color:var(--muted);text-align:right}
+#chat .m a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px}#chat .m a:hover{text-decoration-thickness:2px}#chat .m.th{color:var(--muted)}#chat .m .dg{margin-top:10px}#chat .m .dg svg{width:100%;height:auto;display:block}#chat .m{max-width:94%;font-size:15px;line-height:21px}#chat .m.u{align-self:flex-end;color:var(--muted);text-align:right}
 #chat .empty{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:0;padding-bottom:6px}
 #chat .sq{width:14px;height:14px;background:var(--accent);margin:auto;animation:sqp 2.4s ease-in-out infinite}
 @keyframes sqp{0%,100%{opacity:1}50%{opacity:.35}}
@@ -1009,13 +1009,18 @@ requestAnimationFrame(loop);
       SYN.speak(u)})}catch(e){sp.classList.remove('say')}}
   spkUI();if(!SYN)sp.style.display='none';
   sp.addEventListener('click',function(){unlock();spk=!spk;spkUI();if(!spk)hush()});
+  var LK=[[/Keep x Meta|KeepxMeta/i,'work/keep/'],[/Mayo Clinic|Mayo/,'work/mayo/'],[/Active Zen/i,'work/active-zen/'],[/LiveSync/i,'work/livesync/'],[/Uni-?Verse/i,'work/uni-verse/'],[/\bAro\b/,'work/aro/'],[/Homie/i,'work/homie/'],[/Pro-?Move/i,'work/promove/'],[/Predictive Maintenance Intelligence Platform|PMIP/,'work/pmip/'],[/kalyansudhakar25@gmail\.com/,'mailto:kalyansudhakar25@gmail.com']];
+  function linkify(el,t){var used={},hits=[];LK.forEach(function(l){var m=l[0].exec(t);if(m)hits.push({i:m.index,n:m[0].length,u:l[1]})});
+    hits.sort(function(a,b){return a.i-b.i});var pos=0,keep=[];hits.forEach(function(h){if(h.i>=pos&&!used[h.u]){used[h.u]=1;keep.push(h);pos=h.i+h.n}});
+    pos=0;el.textContent='';keep.forEach(function(h){el.appendChild(document.createTextNode(t.slice(pos,h.i)));var a=document.createElement('a');a.href=h.u;a.textContent=t.substr(h.i,h.n);if(h.u.indexOf('mailto:')<0){a.target='_blank';a.rel='noopener'}el.appendChild(a);pos=h.i+h.n});
+    el.appendChild(document.createTextNode(t.slice(pos)))}
   /* ---- sending ---- */
   function send(body,ub){busy=true;var th=add('…',false,'th');body.history=HIST;
     fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json()}).catch(function(){return {}}).then(function(j){
       var r=(j&&j.reply)||'Gomma is taking a quick break. Email Kalyan directly at kalyansudhakar25@gmail.com.',q=body.q||'';
       if(ub){q=(j&&j.transcript||'').trim();ub.classList.remove('th');ub.textContent=q||'Voice message'}
       var dia=/\[\[diamond\]\]/.test(r);r=r.replace(/\s*\[\[diamond\]\]\s*/g,'').trim();
-      th.classList.remove('th');th.textContent=r;if(dia&&window.__DDS){var w=document.createElement('div');w.className='dg';w.innerHTML=window.__DDS;th.appendChild(w)}
+      th.classList.remove('th');linkify(th,r);if(dia&&window.__DDS){var w=document.createElement('div');w.className='dg';w.innerHTML=window.__DDS;th.appendChild(w)}
       msgs.scrollTop=msgs.scrollHeight;HIST.push({r:'u',t:q||'(voice)'},{r:'m',t:r});HIST=HIST.slice(-8);busy=false;say(r)})}
   function ask(q){q=q.trim();if(!q||busy)return;unlock();add(q,true);chips.style.display='none';send({q:q})}
   cf.addEventListener('submit',function(e){e.preventDefault();var v=ci.value;ci.value='';ask(v)});
