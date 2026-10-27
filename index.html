@@ -701,11 +701,12 @@ function applyPose2(dt,t){
   if(poseName==='pull'){var u=(Math.sin(t*1.2)+1)/2;rootG.position.y=c[1]+u*.28;jt.elL.rotation.x=-.1-u*1.9;jt.elR.rotation.x=-.1-u*1.9;jt.shL.rotation.x=-3.0+u*.1;jt.shR.rotation.x=-3.0+u*.1}
   if(poseName==='sit'){var sp=Math.max(0,Math.sin(t*.9)-.55)/.45;jt.shR.rotation.x=-.85-.45*sp;jt.elR.rotation.x=-1.65-.35*sp;jt.head.rotation.x=.12+.1*sp;jt.spine.rotation.x=-.2+.02*Math.sin(t*1.7)}
   if(poseName==='curl'){var u2=(Math.sin(t*1.7)+1)/2;jt.elL.rotation.x=-.2-u2*2.0;jt.elR.rotation.x=-.2-u2*2.0;jt.shL.rotation.x=-.04-u2*.12;jt.shR.rotation.x=-.04-u2*.12;jt.spine.rotation.x=-.05*u2}
-  var pb=t%4.2,bl=pb<.14?Math.abs(pb-.07)/.07:1;if(poseName==='sleep')bl=.0;eyes.forEach(function(e){e.scale.y=.12+.88*bl});
+  var pb=t%4.2,bl=pb<.14?Math.abs(pb-.07)/.07:1;if(poseName==='sleep'||poseName==='meditate')bl=.0;eyes.forEach(function(e){e.scale.y=.12+.88*bl});
 }
 
 var BEAN={x:.45,z:-1.25};var PI=Math.PI;
 P.curl={root:[0,1.0,0,0],shL:[0,0,.1],shR:[0,0,-.1],elL:[-.3,0,0],elR:[-.3,0,0],hpL:[0,0,-.05],hpR:[0,0,.05],head:[0,0,0]};
+P.meditate={root:[0,.17,0,0],spine:[-.02,0,0],neck:[0,0,0],head:[.05,0,0],shL:[-.33,0,.44],shR:[-.33,0,-.44],elL:[-.72,0,0],elR:[-.72,0,0],wrL:[-.6,0,0],wrR:[-.6,0,0],hpL:[-1.535,0,.585],hpR:[-1.535,0,-.585],knL:[3.02,0,-.85],knR:[3.03,0,.73],anL:[0,0,0],anR:[0,0,0]};
 P.sleep={root:[0,.67,0,0],rx:-1.5708,shL:[0,0,.12],shR:[0,0,-.12],elL:[-.15,0,0],elR:[-.15,0,0],hpL:[0,0,-.04],hpR:[0,0,.04],head:[.0,0,0]};
 P.sit={root:[0,.42,-.05,0],spine:[-.2,0,0],hpL:[-1.12,0,-.14],hpR:[-1.12,0,.12],knL:[.25,0,0],knR:[.3,0,0],shL:[-.2,0,.2],elL:[-.5,0,0],shR:[-.85,0,-.12],elR:[-1.65,0,0],wrR:[-.3,0,0],head:[.12,.1,0],neck:[.05,0,0]};
 var ACT={
@@ -714,6 +715,7 @@ var ACT={
  easel:{pos:{x:-2.3,z:-2.1},head:PI,pose:'paint',dur:[7,10],hub:[-2.3,-1.5],side:[],k:3,w:2},
  pull:{pos:{x:.4,z:.55},head:0,pose:'pull',dur:[8,11],hub:[.4,-.3],side:[],k:3,w:2},
  curl:{pos:{x:-1.3,z:.6},head:0,pose:'curl',dur:[8,11],hub:[-1.3,-.2],side:[],k:3,w:2},
+ meditate:{pos:{x:1.2,z:-1.2},head:PI/4,pose:'meditate',dur:[14,20],hub:[1.2,-1.2],side:[],k:3,w:2},
  sleep:{pos:{x:-2.9,z:1.4},head:PI/2,pose:'sleep',dur:[13,18],hub:[-1.55,.6],side:[[-1.7,1.4]],slideIn:true,k:1.3,w:1},
  wander:{pos:{x:-1,z:-1},head:0,pose:'stand',dur:[2,4],hub:[-1,-1],side:[],k:3,w:1.5}
 };
@@ -725,7 +727,8 @@ function angLerp(a,b,k){var d=Math.atan2(Math.sin(b-a),Math.cos(b-a));return a+d
 function setPoseName(n){poseName=n;tgt=P[n]}
 setPoseName('type');
 var SLP=false,SLPp=false;
-function pickNext(){if(SLP)return 'sleep';var tot=0;KEYS.forEach(function(k){if(k!==C.cur)tot+=ACT[k].w});var r=Math.random()*tot,n=C.cur;
+var SEQ=['meditate','pull','desk','board','desk','easel','curl','desk','wander'],SQI=0;
+function pickNext(){if(SLP)return 'sleep';if(C.cur==='sleep')SQI=0;var n=SEQ[SQI%SEQ.length];SQI++;if(n===C.cur){n=SEQ[SQI%SEQ.length];SQI++}return n;var tot=0;KEYS.forEach(function(k){if(k!==C.cur)tot+=ACT[k].w});var r=Math.random()*tot,n=C.cur;
   for(var i=0;i<KEYS.length;i++){var k=KEYS[i];if(k===C.cur)continue;r-=ACT[k].w;if(r<=0){n=k;break}}return n}
 function avoid(pts){return pts;var cx=BEAN.x,cz=BEAN.z,R=.7,out=[];
   var cur=[C.x,C.z];
@@ -998,6 +1001,7 @@ function onScroll(){var MB=!NAVW_NOW;if(MB!==LMB){LMB=MB;setH()}PANN=Math.max(6,
 addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll);onScroll();
 (function(){var h=(location.hash||'').slice(1),i=['home','work','play','doodles','about'].indexOf(h);if(i>0){window.scrollTo(0,YS[i]*vh());onScroll();sC=sT}})();
 var last=performance.now(),clock=reduce?4:0;
+(function(){var mm=toon('#aab4c8'),m2=toon('#8794ad');cylm(.48,.5,.02,mm,1.2,.02,-1.2,.005);cylm(.2,.22,.012,m2,1.2,.032,-1.2,.004)})();
 /* ---------- night: dark blue-grey room, cool lamp glow, Kalyan asleep ---------- */
 var NIGHT=(function(){
   var NO=null,NT=0,RVF=1,NF=-1,BM=null,tgtN=false;
@@ -1144,6 +1148,6 @@ requestAnimationFrame(loop);
   function temp(){try{fetch('https://api.open-meteo.com/v1/forecast?latitude=33.42&longitude=-111.94&current=temperature_2m&temperature_unit=fahrenheit').then(function(r){return r.json()}).then(function(j){var t=j&&j.current&&j.current.temperature_2m;if(typeof t==='number'){K.textContent=Math.round(t)+'\u00b0F';C.hidden=false}}).catch(function(){})}catch(e){}}
   temp();setInterval(temp,600000)
 })();
-window.__room={C:C,step:step,tick:tick,P:P,go:function(s){sT=s;sC=s}};
+window.__room={ACT:ACT,pose:function(n,x,z){setPoseName(n);C.cur=n;C.mode='station';C.timer=999;if(x!=null){C.x=x;C.z=z}},C:C,step:step,tick:tick,P:P,go:function(s){sT=s;sC=s}};
 })();
 </script>
