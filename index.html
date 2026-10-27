@@ -886,14 +886,14 @@ var DOOD=[
  {n:'Doodle 06',x:14,y:9.3,w:6,h:8.3,m:{x:7,y:18.6,w:6,h:8.3},img:IMG.d4},
  {n:'Doodle 07',x:7,y:20.7,w:6,h:8.3,m:{x:0,y:30.0,w:6,h:8.3},img:IMG.d5}
 ];
-var PLAY=(function(){function P(n,d,x,y,w,h,k,m){return {n:n,d:d,x:x,y:Math.round((y+.3*x)*10)/10,w:w,h:h,vid:VD[k],poster:PS[k],bg:'#000',m:m}}
+var PLAY=(function(){function P(n,d,x,y,w,h,k,m,href){return {href:href,n:n,d:d,x:x,y:Math.round((y+.3*x)*10)/10,w:w,h:h,vid:VD[k],poster:PS[k],bg:'#000',m:m}}
  return [
  P('Doodle','Music',0,0,11,6.19,'gomma',{x:0,y:0,w:13,h:7.31}),
  P('Threadscape','Immersive Experience',12,.5,8,4.36,'thread',{x:0,y:9.2,w:13,h:7.08}),
  P('WatchGPT','ChatGPT',0,9,5,7.24,'watch',{x:3.5,y:18.4,w:6,h:8.68}),
  P('Data Doodler','Data Humanism',6,9,14,3.62,'doodler',{x:0,y:28.6,w:13,h:3.36}),
- P('LiveSync','Google Photos',6.5,14.6,6.5,6.35,'livesync',{x:0,y:33.6,w:6.3,h:6.15}),
- P('Active Zen','Wellness',14,15,6,5.87,'zen',{x:6.7,y:33.6,w:6.3,h:6.15})]})();
+ P('LiveSync','Google Photos',6.5,14.6,6.5,6.35,'livesync',{x:0,y:33.6,w:6.3,h:6.15},'work/livesync/'),
+ P('Active Zen','Wellness',14,15,6,5.87,'zen',{x:6.7,y:33.6,w:6.3,h:6.15},'work/active-zen/')]})();
 function placeCards(P,mob){P.list.forEach(function(d,k){var g=mob&&d.m?d.m:d,s=P.els[k].style;s.left=g.x*55+'px';s.top=g.y*55+'px';s.width=g.w*55+'px';P.els[k].firstChild.style.height=g.h*55+'px'});P.mode=mob}
 function mkCards(list,host){var els=[];list.forEach(function(d){var a=document.createElement('a');a.className='card';a.href=d.href||'#';a.setAttribute('aria-label',d.n+', '+d.d);
   if(d.yr!==undefined||d.bg){a.classList.add('wk');a.innerHTML='<span class="box"></span><span class="cap"><b></b><i>/</i><span class="ds"></span></span>';a.querySelector('b').textContent=d.n;a.querySelector('.ds').textContent=(d.d||'')+(d.yr?(d.d?' ':'')+d.yr:'');if(d.bg)a.firstChild.style.background=d.bg}
