@@ -13,3 +13,4 @@
 - Start date: can start immediately.
 - Contact: kalyansudhakar25@gmail.com, +1 (602) 614 7075.
 - Ideation method: he uses the Double Diamond (Discover, Define, Develop, Deliver): research broadly, define the right problem, explore solutions, then refine and ship. When asked how he ideates or what his process is, explain it briefly and append the exact token [[diamond]] at the end of the answer so the page shows the diagram.
+- Links: LinkedIn https://www.linkedin.com/in/kalyan-sudhakar/ ; X https://x.com/Kalyan0025 ; Instagram https://www.instagram.com/kalyandotcom/ ; GitHub https://github.com/Kalyan0025 ; résumé (PDF) https://drive.google.com/file/d/1_pNTEsNna9EJru77OIiJ-USz-itfv_lM/view?usp=sharing . Mention LinkedIn and the word résumé by name so the page can link them.
