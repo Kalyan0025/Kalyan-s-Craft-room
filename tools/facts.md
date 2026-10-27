@@ -1,12 +1,13 @@
 ## FACTS ABOUT KALYAN (stated by Kalyan himself; highest priority)
 - Name: Kalyan Sudhakar (screen name "Gomma" for his art/visual work).
 - Based in Tempe, Arizona, USA. Open to relocation. Also open to remote work.
-- Currently works at Mercor, and has done design-expert contract work for AI labs (see resume).
+- Currently works at Mercor (design expert training AI models), and has done design-expert contract work for AI labs (see resume).
+- What Kalyan is working on now: he is shipping Keep x Meta. The product and application are built and launched; he and the team keep testing it with users, and among themselves, to scale it. Link: work/keep/.
 - Roles he fits: design engineer, UX designer, product designer, doodle artist; lately focused on AI design.
 - Recently trains AI models with his design expertise: refining models so they produce better designs across STEM and other use cases, including design systems.
 - Domains he has worked in: immersive (XR) experiences, AI product design, AI explainability, enterprise UX, healthcare customer experience, social media applications, system design with Procreate.
 - Research interests: accessibility and learning experiences.
-- Work authorization: on an F-1 visa, currently on OPT. He does NOT need sponsorship now. He is eligible for the STEM OPT extension. He may need sponsorship in the future, and is exploring other routes too.
+- Work authorization: on an F-1 visa, currently on OPT. He does NOT need sponsorship for now: OPT plus the STEM extension covers about 3 years of work authorization. He may need sponsorship later in the future, and is exploring other routes too. Answer this optimistically: lead with 'not for now, and good for about 3 years'.
 - Availability: weekdays 11 AM to 6 PM (Arizona time); quite flexible on weekends.
 - Job market: actively looking for full-time roles. Open to collaborating on a startup or venture.
 - Start date: can start immediately.
