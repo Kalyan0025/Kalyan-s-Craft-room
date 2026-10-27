@@ -950,11 +950,12 @@ var NAVA=[].slice.call(document.querySelectorAll('nav a'));
 function navSet(i){NAVA.forEach(function(a,k){if(k===i)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
   try{var id=['home','work','play','doodles','about'][i];if(history.replaceState)history.replaceState(null,'','#'+id)}catch(e){}}
 function vh(){return window.innerHeight}
-var WK=2.4,PK=1.8,DK=1.8,AK=3.2,P0=WK+1,D0=P0+PK,YS=[0,1,P0,D0,D0+DK];
-function setH(){document.getElementById('work').style.height=WK*vh()+'px';document.getElementById('about').style.height=AK*vh()+'px';document.getElementById('doodles').style.height=DK*vh()+'px';document.getElementById('play').style.height=PK*vh()+'px'}setH();addEventListener('resize',setH);
+var WK=2.4,PK=1.8,DK=1.8,AK=3.2,P0,D0,YS,LMB=null;
+function dims(){var mb=!NAVW_NOW;WK=mb?4.4:3.4;PK=2.2;DK=mb?2.4:2.6;AK=4;P0=WK+1;D0=P0+PK;YS=[0,1,P0,D0,D0+DK]}dims();
+function setH(){dims();document.getElementById('work').style.height=WK*vh()+'px';document.getElementById('about').style.height=AK*vh()+'px';document.getElementById('doodles').style.height=DK*vh()+'px';document.getElementById('play').style.height=PK*vh()+'px'}setH();addEventListener('resize',setH);
 function goTo(i){window.scrollTo({top:YS[i]*vh(),behavior:reduce?'auto':'smooth'})}
 NAVA.forEach(function(a,i){a.addEventListener('click',function(e){e.preventDefault();if(window.__rvClose)window.__rvClose();goTo(i)})});
-function onScroll(){var MB=!NAVW_NOW;PANN=Math.max(6,(MB?85:37)-(VH-(MB?150:116))/cpW());PANN3=MB?28:22.3;PANN4=MB?16.7:0;var q=Math.max(0,window.scrollY/vh()),E=D0+DK;PAN=0;PAN2=0;PAN3=0;PAN4=0;
+function onScroll(){var MB=!NAVW_NOW;if(MB!==LMB){LMB=MB;setH()}PANN=Math.max(6,(MB?85:37)-(VH-(MB?150:116))/cpW());PANN3=MB?28:22.3;PANN4=MB?16.7:0;var q=Math.max(0,window.scrollY/vh()),E=D0+DK;PAN=0;PAN2=0;PAN3=0;PAN4=0;
   if(q<1){sT=q}else if(q<WK){sT=1;PAN=(q-1)/(WK-1)}
   else{PAN=1;if(q<P0){sT=1+q-WK}else if(q<D0-1){sT=2;PAN4=(q-P0)/(PK-1)}else if(q<D0){sT=2+q-(D0-1);PAN4=1}else if(q<E-1){sT=3;PAN4=1;PAN3=(q-D0)/(DK-1)}else{sT=Math.min(4,3+q-(E-1));PAN4=1;PAN3=1;PAN2=Math.max(0,Math.min(1,(q-E)/(AK-1)))}}}
 addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll);onScroll();
