@@ -160,6 +160,20 @@ details[open] summary{color:var(--accent)}
 @media(max-width:520px){.flows{grid-template-columns:1fr}}
 
 /* uni-verse */
+.gl .sol{display:flex;flex-direction:column;gap:16px;margin:8px 0 22px}
+.gl .rw{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1.5fr);gap:14px;align-items:stretch}
+.gl .ar{font-style:normal;align-self:center;text-align:center;color:var(--accent);font-size:22px}
+.gl .iss{border:1px solid var(--line-2);padding:18px 20px}
+.gl .iss small,.gl .stk1 small{display:block;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.gl .stk1 small{color:var(--accent)}
+.gl .iss b,.gl .stk1 b{display:block;font-family:var(--f-display);font-weight:400;font-size:21px;line-height:1.2;color:var(--ink);margin-bottom:8px}
+.gl .iss p,.gl .stk1 p{margin:0;font-size:15px;line-height:1.45}
+.gl .ans{display:grid;grid-template-columns:1fr;gap:14px}.gl .ans.two{grid-template-columns:1fr 1fr}
+.gl .stk1{background:var(--bg);border-top:3px solid var(--accent);padding:18px 20px}
+.gl .vis{margin:0 0 26px;color:var(--ink-2)}.gl .vis b{color:var(--ink);font-weight:500}
+.bts5{gap:12px}.bts5 figcaption p{margin:6px 0 0;font-size:13px;color:var(--muted);line-height:1.35}
+.grid.c5{grid-template-columns:repeat(5,1fr)}.grid.c5 img{aspect-ratio:4/3;object-fit:cover;width:100%}
+@media(max-width:860px){.gl .rw{grid-template-columns:1fr}.gl .ar{transform:rotate(90deg)}.gl .ans.two{grid-template-columns:1fr}.grid.c5{grid-template-columns:repeat(2,1fr)}}
 .ph.w{max-width:none}
 .stk{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
 .stk>div{background:rgba(64,64,66,.09);border-top:3px solid var(--line-2);padding:18px 16px 20px;min-height:170px;transform:rotate(var(--r,0deg));transition:transform .25s,border-color .25s}
@@ -269,11 +283,16 @@ em.k{background:rgba(230,95,46,.1)!important}
 <div class="herovid"><video src="hero.mp4" autoplay muted loop playsinline></video></div>
 </header>
 
-<section class="s" id="glance"><div class="sh"><span class="lbl">01 &middot; 30-second view</span><h2>Five ideas that make <em class="k">showing up easier.</em></h2><p>Uni-Verse turns everyday campus life into small, low-risk chances to meet people. Each idea answers one thing students told us stops them.</p></div>
-<div class="stk"><div><b>Social Heat Map</b><p>Real-time view of campus activities, events and student zones.</p></div><div><b>Tag-Along</b><p>Join friends at events and make showing up feel easier, safer, less awkward.</p></div><div><b>Communities</b><p>Interest-based spaces to find people, groups and shared belonging.</p></div><div><b>Shuttle Tracking</b><p>Live shuttle updates that make getting around campus less stressful.</p></div><div><b>Student-first vision</b><p>A direction built around belonging, access, participation and trust.</p></div></div>
-<div class="gap"></div>
+<section class="s" id="glance"><div class="story gl">
+<div class="sh"><span class="lbl">01 &middot; 30-second view</span><h2>Three things stop students. <em class="k">Five ideas answer them.</em></h2><p>Uni-Verse turns everyday campus life into small, low-risk chances to meet people.</p></div>
+<div class="sol">
+<div class="rw"><div class="iss"><small>Situation</small><b>Hard to make friends and adapt to a new culture</b><p>72% felt lonely after arriving.</p></div><i class="ar">&rarr;</i><div class="ans"><div class="stk1"><small>Solution</small><b>Communities</b><p>Interest-based spaces to find people, groups and shared belonging.</p></div></div></div>
+<div class="rw"><div class="iss"><small>Situation</small><b>No real-time view of events and campus resources</b><p>Events are missed because they are hard to see.</p></div><i class="ar">&rarr;</i><div class="ans"><div class="stk1"><small>Solution</small><b>Social Heat Map</b><p>Real-time view of campus activities, events and student zones.</p></div></div></div>
+<div class="rw"><div class="iss"><small>Situation</small><b>Transport, clashing schedules and going alone</b><p>89% want connections, yet many skip events without company.</p></div><i class="ar">&rarr;</i><div class="ans two"><div class="stk1"><small>Solution</small><b>Tag-Along</b><p>Join friends at events, so showing up feels easier and safer.</p></div><div class="stk1"><small>Solution</small><b>Shuttle Tracking</b><p>Live shuttle updates that make getting around less stressful.</p></div></div></div>
+</div>
+<p class="vis"><b>Student-first vision:</b> a direction built around belonging, access, participation and trust.</p>
 <div class="stat4"><div class="hl"><div class="big">72%</div><p>of students felt lonely after arriving</p></div><div><div class="big">89%</div><p>want new connections</p></div><div><div class="big">9/10</div><p>rated Tag-Along in testing</p></div><div><div class="big">9</div><p>features no compared platform has</p></div></div>
-</section>
+</div></section>
 
 <section class="s" id="problem"><div class="sh"><span class="lbl">02 &middot; The problem</span><h2>New students arrive with plenty to join <em class="k">and nobody to join it with.</em></h2><p>Freshmen and international students struggle to connect, adapt and stay engaged. Loneliness follows, and so do missed chances.</p></div>
 <div class="prob"><div><i>01</i><p>Hard to build friendships and adapt to a new culture.</p></div><div><i>02</i><p>No real-time view of events, communities and campus resources.</p></div><div><i>03</i><p>Transport, clashing schedules and the hesitation to go alone.</p></div></div>
@@ -305,9 +324,6 @@ em.k{background:rgba(230,95,46,.1)!important}
 
 <section class="s" id="structure"><div class="sh"><span class="lbl">07 &middot; Structure</span><h2>Four anchors, <em class="k">everything else one tap away.</em></h2><p>The app is organised around Tag-Along, Communities, Events and the Heat Map. Each answers a specific need: Tag-Along removes going alone, the Heat Map removes not knowing what is on, and shuttle tracking removes the wait.</p></div>
 <div class="root">Uni-Verse app</div><div class="ia"><div><h3>Authentication</h3><ul><li>Login<small>Apple, Google, Meta, email</small></li><li>Sign up<small>Name, email, password</small></li></ul></div><div><h3>Home</h3><ul><li>Top nav</li><li>Map shortcut</li><li>Events<small>Cards, view all</small></li><li>Cohorts<small>Cards, view all</small></li></ul></div><div class="hi"><h3>Map (UniMap)</h3><ul><li>Search and filter tabs</li><li>Pins<small>Event, cohort, tag-along, shuttle</small></li><li>Shuttle timings</li></ul></div><div><h3>Events</h3><ul><li>Events main</li><li>Event detail<small>RSVP, info, status</small></li><li>Event created</li></ul></div><div class="hi"><h3>Tag-Along</h3><ul><li>Discovery</li><li>Detail<small>Activity info, tag-along button</small></li><li>Approval<small>Waiting, accepted</small></li></ul></div><div><h3>Cohorts</h3><ul><li>Communities main<small>Your cohorts, explore</small></li><li>Cohort detail<small>Info, members, chat, virtual events</small></li></ul></div><div><h3>Create</h3><ul><li>Tag-Along<small>Activity, vibes, schedule, who can join</small></li><li>Cohort<small>Name, interests, vibes</small></li><li>Event<small>Details, rules, RSVP</small></li></ul></div><div><h3>Direct messaging</h3><ul><li>DM list</li><li>Threads<small>By tag-along, by cohort</small></li><li>Chat</li></ul></div><div><h3>Notifications + Profile</h3><ul><li>Notifications<small>Tag-along, event, cohort</small></li><li>Profile<small>User info, connections, interests</small></li><li>Settings<small>Privacy, prefs, logout</small></li></ul></div></div>
-<div class="gap"></div>
-<div class="sh"><span class="lbl">First sketches</span><h3 style="font-family:var(--f-display);font-weight:400;font-size:24px;margin:0">Paper first: the home, the explore page and Tag-Along.</h3></div>
-<div class="ph w"><button class="zoom" data-b="1" style="padding:0;border:0;background:none;cursor:zoom-in;display:block;width:100%"><img loading="lazy" alt="Early sketch of the home and tag-along screens" src="img/sketch.jpg"></button></div>
 </section>
 
 <section class="s" id="system"><div class="sh"><span class="lbl">08 &middot; Design system</span><h2>A dark, calm base <em class="k">with one gradient for energy.</em></h2><p>Black and white neutrals carry the screens. Blue to purple marks what is active, set in SF Pro. Vibe chips such as Chill, Low-key and Team play let students describe an event in a word.</p></div>
@@ -330,7 +346,7 @@ em.k{background:rgba(230,95,46,.1)!important}
 </section>
 
 <section class="s" id="bts"><div class="sh"><span class="lbl">12 &middot; Behind the scenes</span><h2>Awarded best UX/UI Designer <em class="k">by ASU GIT.</em></h2></div>
-<div class="grid c3"><figure><button class="zoom" data-b="1"><img loading="lazy" alt="UX/UI Design Award certificate, ASU GIT, Fall 2025" src="img/bts1.jpg"></button><figcaption><p>Awarded as the best UX/UI Designer for Uni-Verse by ASU GIT</p></figcaption></figure><figure><button class="zoom" data-b="1"><img loading="lazy" alt="Survey and interview at an outdoor campus cafe" src="img/bts2.jpg"></button><figcaption><p>Survey &amp; interview</p></figcaption></figure><figure><button class="zoom" data-b="1"><img loading="lazy" alt="Survey and interview, second angle" src="img/bts3.jpg"></button><figcaption><p>Survey &amp; interview</p></figcaption></figure><figure><button class="zoom" data-b="1"><img loading="lazy" alt="The team working together at a campus table" src="img/bts4.jpg"></button><figcaption><p>Team at work</p></figcaption></figure><figure><button class="zoom" data-b="1"><img loading="lazy" alt="A/B testing the app name with passers-by" src="img/bts5.jpg"></button><figcaption><p>A/B testing, naming the app</p></figcaption></figure><figure><button class="zoom" data-b="1"><img loading="lazy" alt="Sticky note walls from affinity mapping" src="img/bts6.jpg"></button><figcaption><p>Sticky note wall</p></figcaption></figure></div>
+<div class="grid c5 bts5"><figure><button class="zoom" data-b="1"><img loading="lazy" alt="UX/UI Design Award certificate, ASU GIT, Fall 2025" src="img/bts1.jpg"></button><figcaption><p>Awarded as the best UX/UI Designer for Uni-Verse by ASU GIT</p></figcaption></figure><figure><button class="zoom" data-b="1"><img loading="lazy" alt="Survey and interview at an outdoor campus cafe" src="img/bts2.jpg"></button><figcaption><p>Survey &amp; interview</p></figcaption></figure><figure><button class="zoom" data-b="1"><img loading="lazy" alt="Survey and interview, second angle" src="img/bts3.jpg"></button><figcaption><p>Survey &amp; interview</p></figcaption></figure><figure><button class="zoom" data-b="1"><img loading="lazy" alt="The team working together at a campus table" src="img/bts4.jpg"></button><figcaption><p>Team at work</p></figcaption></figure><figure><button class="zoom" data-b="1"><img loading="lazy" alt="A/B testing the app name with passers-by" src="img/bts5.jpg"></button><figcaption><p>A/B testing, naming the app</p></figcaption></figure></div>
 </section>
 </div></main>
 <dialog id="dlg"><img alt=""></dialog>
