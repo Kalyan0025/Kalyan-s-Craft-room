@@ -45,6 +45,7 @@ canvas{display:block;width:100%;height:100%}
 
 .blk{position:absolute;box-sizing:border-box;color:var(--ink);pointer-events:auto;transition:opacity .25s ease-out;font-size:23px}
 .blk .lb{font-size:17px;line-height:24px;letter-spacing:.04em;color:rgba(50,64,79,.55)}
+.blk .lb.sh{font-size:14px;line-height:19px;letter-spacing:0}
 .blk h2{margin:0;font-weight:400;font-size:42px;line-height:52px;letter-spacing:-.015em;white-space:nowrap}
 .blk p{margin:0;font-size:23px;line-height:37px;color:rgba(50,64,79,.88)}
 .blk .hero{font-family:'Libre Baskerville',Georgia,serif;font-size:62px;line-height:72px;letter-spacing:-.025em;white-space:nowrap}
@@ -78,7 +79,7 @@ canvas{display:block;width:100%;height:100%}
 .am .blk a{pointer-events:auto}
 .am .blk.pt{width:62%;max-width:260px;aspect-ratio:4/5;margin-bottom:18px}
 .am .blk.sec{margin:34px 0 6px}
-.am .blk .lb{font-size:13px;line-height:18px}
+.am .blk .lb{font-size:13px;line-height:18px}.am .blk .lb.sh{font-size:14px;line-height:19px}
 .am .blk h2{font-size:30px;line-height:38px;white-space:normal}
 .am .blk p{font-size:16px;line-height:26px}
 .am .blk .hero{font-size:30px;line-height:40px;white-space:normal}
@@ -841,42 +842,41 @@ var WORK=[
  {n:'Active Zen',d:'Wellness',yr:'',x:0,y:27.4,w:6,h:5.87,href:'work/active-zen/',vid:VD.zen,poster:PS.zen,m:{x:2,y:62.2,w:8,h:7.83}},
  {n:'LiveSync',d:'Google Photos',yr:'2025',x:10.5,y:24,w:6.5,h:6.35,href:'work/livesync/',vid:VD.livesync,poster:PS.livesync,m:{x:2,y:71.7,w:8,h:7.75}}
 ];
-var PAN2=0,PANN2=38,PAN3=0,PANN3=22.3,PAN4=0,PANN4=7;
+var PAN2=0,PANN2=38.6,PAN3=0,PANN3=22.3,PAN4=0,PANN4=7;
 function rowH(lg,a,yr,role,alt){return '<div class="row"><div class="lg"><img src="'+lg+'" alt="'+alt+'"></div><div class="tx"><div class="t1">'+a+'</div><div class="t2">'+role+'</div></div>'+(yr?'<div class="yr">'+yr+'</div>':'')+'</div>'}
 var DDS='<svg class="dd" viewBox="0 0 780 292" role="img" aria-label="Double Diamond: Discover, Define, Develop, Deliver; each diamond expands then converges"><path d="M0 120H40L210 20L380 120L210 220L40 120M380 120H400L570 20L740 120L570 220L400 120M740 120H780" fill="none" stroke="rgba(50,64,79,.55)" stroke-width="1.3" vector-effect="non-scaling-stroke"/><path d="M210 20V220M570 20V220" fill="none" stroke="rgba(50,64,79,.4)" stroke-width="1.1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/><g text-anchor="middle" font-size="25" style="fill:rgba(50,64,79,.92)"><text x="125" y="129">Discover</text><text x="295" y="129">Define</text><text x="485" y="129">Develop</text><text x="655" y="129">Deliver</text></g><path d="M48 242V250H202V242M218 242V250H372V242M408 242V250H562V242M578 242V250H732V242" fill="none" stroke="rgba(50,64,79,.35)" stroke-width="1.1" vector-effect="non-scaling-stroke"/><g text-anchor="middle" font-size="19" style="fill:rgba(50,64,79,.6)"><text x="125" y="280">Expand</text><text x="295" y="280">Converge</text><text x="485" y="280">Expand</text><text x="655" y="280">Converge</text></g></svg>';
 var IC={mail:'<svg viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="0"/><path d="M1.5 3.5L8 9l6.5-5.5"/></svg>',pin:'<svg viewBox="0 0 16 16"><path d="M8 14.5S3 10 3 6.2a5 5 0 0 1 10 0C13 10 8 14.5 8 14.5z"/><circle cx="8" cy="6.2" r="1.7"/></svg>',tel:'<svg viewBox="0 0 16 16"><path d="M3.2 2h2.6l1.2 3-1.6 1.1a8 8 0 0 0 3.5 3.5L10 8l3 1.2v2.6c0 .6-.5 1.2-1.2 1.2A10 10 0 0 1 2 3.2C2 2.5 2.600 2 3.200 2z"/></svg>'};
 var ABOUT=[
- {x:0,y:0,w:4,h:.6,html:'<div class="lb">About</div>'},
- {x:0,y:1.8,w:5.6,h:5,html:'<div class="fr" id="stFr"><img src="'+IMG.me+'" alt="Kalyan Sudhakar, black and white portrait"></div>'},
- {x:0,y:7.0,w:6.6,h:.9,html:'<div class="nm">Kalyan Sudhakar</div>'},
- {x:0,y:8.3,w:6.6,h:2.5,html:'<div class="cb"><a href="mailto:kalyansudhakar25@gmail.com">'+IC.mail+'<span>kalyansudhakar25@gmail.com</span></a><div>'+IC.pin+'<span>Tempe, Arizona</span></div><a href="tel:+16026147075">'+IC.tel+'<span>+1 (602) 614 7075</span></a></div>'},
- {x:7.2,y:4.0,w:4,h:.5,html:'<div class="lb">About</div>'},
- {x:7.2,y:4.55,w:9,h:1.9,html:'<h2>UX Designer, Engineer,<br>Doodle Artist</h2>'},
- {x:7.2,y:6.65,w:4,h:.75,html:'<a class="rs" href="#recruiter">Résumé</a>',res:1},
- {x:7.2,y:7.7,w:12.5,h:3,html:'<p>I’m Kalyan, a designer driven by curiosity and a deep fascination with human behavior. Design found me early, not as something I set out to do, but as something that felt natural. A way of observing, experimenting, and expressing ideas.</p>'},
- {x:7.2,y:10.9,w:12,h:1.4,html:'<div class="hero">I Design for Dopamine</div>'},
- {x:7.2,y:12.5,w:10.5,h:1.9,html:'<div class="sub">The quiet thrill of curiosity, momentum, and the moment when creativity and problem-solving click</div>'},
- {x:7.2,y:16.4,w:4,h:.6,html:'<div class="lb">Experience</div>'},
- {x:7.2,y:17.3,w:12.5,h:1.7,html:rowH(LG.mercor,'Mercor','Jul 2026 \u2013 Present','Visual &amp; Prompt Engineering','Mercor')},
- {x:7.2,y:19.0,w:12.5,h:1.7,html:rowH(LG.taste,'Taste Labs','Aug 2026 \u2013 Oct 2026','Design Expert (Contract)','Taste Labs')},
- {x:7.2,y:20.7,w:12.5,h:1.7,html:rowH(LG.mesh,'Mesh Labs','Sep 2025 \u2013 May 2026','XR Creative','Mesh Labs')},
- {x:7.2,y:22.4,w:12.5,h:1.7,html:rowH(LG.mayo,'Mayo Clinic','Aug 2025 \u2013 Dec 2025','Product / CX Designer','Mayo Clinic')},
- {x:7.2,y:24.1,w:12.5,h:1.7,html:rowH(LG.asu,'CS + Social Good @ ASU','Sep 2024 \u2013 May 2025','Lead Designer','CS + Social Good')},
- {x:7.2,y:25.8,w:12.5,h:1.7,html:rowH(LG.lykiq,'Lykiq Labs','Jan 2024 \u2013 Aug 2024','UX Designer','Lykiq Labs')},
- {x:7.2,y:27.5,w:12.5,h:1.7,html:rowH(LG.siemens,'Siemens','Apr 2022 \u2013 Jul 2024','Product Designer','Siemens')},
- {x:7.2,y:30.6,w:4,h:.6,html:'<div class="lb">Education</div>'},
- {x:7.2,y:31.5,w:12.5,h:1.7,html:rowH(LG.asuseal,'Arizona State University, Tempe, AZ','2024 \u2013 2026','M.S. Human Computer Interaction \u00b7 GPA 4.0 / 4.0','Arizona State University')},
- {x:7.2,y:33.2,w:12.5,h:1.7,html:rowH(LG.pres,'Presidency University, Bangalore, IN','','Computer Science &amp; Engineering \u00b7 CGPA 8.0 / 10','Presidency University')},
- {x:7.2,y:36.4,w:4,h:.6,html:'<div class="lb">My Design Process</div>'},
- {x:7.2,y:37.2,w:12.5,h:3,html:'<p>I use the Double Diamond to turn ambiguity into product clarity: research broadly, define the right problem, explore solutions, and refine the strongest direction into a usable, feasible product.</p>'},
- {x:7.2,y:40.6,w:11.5,h:4.9,html:DDS}
+ {x:0,y:0,w:4,h:.6,html:'<div class="lb sh">About</div>'},
+ {x:0,y:2.4,w:5.6,h:5,html:'<div class="fr" id="stFr"><img src="'+IMG.me+'" alt="Kalyan Sudhakar, black and white portrait"></div>'},
+ {x:0,y:7.6,w:6.6,h:.9,html:'<div class="nm">Kalyan Sudhakar</div>'},
+ {x:0,y:8.9,w:6.6,h:2.5,html:'<div class="cb"><a href="mailto:kalyansudhakar25@gmail.com">'+IC.mail+'<span>kalyansudhakar25@gmail.com</span></a><div>'+IC.pin+'<span>Tempe, Arizona</span></div><a href="tel:+16026147075">'+IC.tel+'<span>+1 (602) 614 7075</span></a></div>'},
+ {x:7.2,y:5.15,w:9,h:1.9,html:'<h2>UX Designer, Engineer,<br>Doodle Artist</h2>'},
+ {x:7.2,y:7.25,w:4,h:.75,html:'<a class="rs" href="#recruiter">Résumé</a>',res:1},
+ {x:7.2,y:8.3,w:12.5,h:3,html:'<p>I’m Kalyan, a designer driven by curiosity and a deep fascination with human behavior. Design found me early, not as something I set out to do, but as something that felt natural. A way of observing, experimenting, and expressing ideas.</p>'},
+ {x:7.2,y:11.5,w:12,h:1.4,html:'<div class="hero">I Design for Dopamine</div>'},
+ {x:7.2,y:13.1,w:10.5,h:1.9,html:'<div class="sub">The quiet thrill of curiosity, momentum, and the moment when creativity and problem-solving click</div>'},
+ {x:7.2,y:17.0,w:4,h:.6,html:'<div class="lb">Experience</div>'},
+ {x:7.2,y:17.9,w:12.5,h:1.7,html:rowH(LG.mercor,'Mercor','Jul 2026 \u2013 Present','Visual &amp; Prompt Engineering','Mercor')},
+ {x:7.2,y:19.6,w:12.5,h:1.7,html:rowH(LG.taste,'Taste Labs','Aug 2026 \u2013 Oct 2026','Design Expert (Contract)','Taste Labs')},
+ {x:7.2,y:21.3,w:12.5,h:1.7,html:rowH(LG.mesh,'Mesh Labs','Sep 2025 \u2013 May 2026','XR Creative','Mesh Labs')},
+ {x:7.2,y:23.0,w:12.5,h:1.7,html:rowH(LG.mayo,'Mayo Clinic','Aug 2025 \u2013 Dec 2025','Product / CX Designer','Mayo Clinic')},
+ {x:7.2,y:24.7,w:12.5,h:1.7,html:rowH(LG.asu,'CS + Social Good @ ASU','Sep 2024 \u2013 May 2025','Lead Designer','CS + Social Good')},
+ {x:7.2,y:26.4,w:12.5,h:1.7,html:rowH(LG.lykiq,'Lykiq Labs','Jan 2024 \u2013 Aug 2024','UX Designer','Lykiq Labs')},
+ {x:7.2,y:28.1,w:12.5,h:1.7,html:rowH(LG.siemens,'Siemens','Apr 2022 \u2013 Jul 2024','Product Designer','Siemens')},
+ {x:7.2,y:31.2,w:4,h:.6,html:'<div class="lb">Education</div>'},
+ {x:7.2,y:32.1,w:12.5,h:1.7,html:rowH(LG.asuseal,'Arizona State University, Tempe, AZ','2024 \u2013 2026','M.S. Human Computer Interaction \u00b7 GPA 4.0 / 4.0','Arizona State University')},
+ {x:7.2,y:33.8,w:12.5,h:1.7,html:rowH(LG.pres,'Presidency University, Bangalore, IN','','Computer Science &amp; Engineering \u00b7 CGPA 8.0 / 10','Presidency University')},
+ {x:7.2,y:37.0,w:4,h:.6,html:'<div class="lb">My Design Process</div>'},
+ {x:7.2,y:37.8,w:12.5,h:3,html:'<p>I use the Double Diamond to turn ambiguity into product clarity: research broadly, define the right problem, explore solutions, and refine the strongest direction into a usable, feasible product.</p>'},
+ {x:7.2,y:41.2,w:11.5,h:4.9,html:DDS}
 ];
 function mkBlocks(list,id){var h=document.createElement('div');h.className='cards';h.id=id;var pl=document.createElement('div');pl.className='pl';h.appendChild(pl);document.body.appendChild(h);
   var els=list.map(function(d){var e=document.createElement('div');e.className='blk';e.innerHTML=d.html;var s=e.style;s.left=d.x*55+'px';s.top=d.y*55+'px';s.width=d.w*55+'px';s.height=d.h*55+'px';
     var a=e.querySelector('a.rs');if(a)a.addEventListener('click',function(ev){ev.preventDefault();document.getElementById('rvBtn').click()});pl.appendChild(e);return e});
   return {h:h,pl:pl,els:els,list:list}}
 var AM=(function(){var h=document.createElement('div');h.className='am';var inn=document.createElement('div');inn.className='in';h.appendChild(inn);
-  ABOUT.forEach(function(d,i){var e=document.createElement('div');e.className='blk'+(d.html.indexOf('class="lb"')>-1?' sec':'')+(i===0?' pt':'');e.innerHTML=d.html.replace('id="stFr"','id="stFrM"');
+  ABOUT.forEach(function(d,i){var e=document.createElement('div');e.className='blk'+(d.html.indexOf('class="lb"')>-1?' sec':'')+(i===1?' pt':'');e.innerHTML=d.html.replace('id="stFr"','id="stFrM"');
     var a=e.querySelector('a.rs');if(a)a.addEventListener('click',function(ev){ev.preventDefault();document.getElementById('rvBtn').click()});inn.appendChild(e)});
   document.body.appendChild(h);return {h:h,inn:inn,fr:null}})();
 var PAN=0,PANN=8;
@@ -902,9 +902,9 @@ function mkCards(list,host){var els=[];list.forEach(function(d){var a=document.c
   if(d.vid){var v=document.createElement('video');v.className='vd';v.muted=true;v.defaultMuted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='auto';if(d.poster)v.poster=d.poster;v.src=d.vid;a.firstChild.appendChild(v);a._vd=v}
   if(d.img){var bx=a.firstChild;bx.style.backgroundImage='url('+d.img+')';bx.style.backgroundSize='cover';bx.style.backgroundPosition='center'}
   a.addEventListener('click',function(e){if(!d.href)e.preventDefault()});host.appendChild(a);els.push(a)});return els}
-var HSD=4,HSM=3.4;
+var HSD=2.4,HSM=2.75;
 function mkPlane(list,id,label){var h=document.createElement('div');h.className='cards';h.id=id;var pl=document.createElement('div');pl.className='pl';h.appendChild(pl);document.body.appendChild(h);
-  var hd=document.createElement('div');hd.className='blk';hd.innerHTML='<div class="lb">'+label+'</div>';hd.style.cssText='left:0;top:0;width:'+4*55+'px;height:'+.6*55+'px';pl.appendChild(hd);
+  var hd=document.createElement('div');hd.className='blk';hd.innerHTML='<div class="lb sh">'+label+'</div>';hd.style.cssText='left:0;top:0;width:'+4*55+'px;height:'+.6*55+'px';pl.appendChild(hd);
   var els=mkCards(list,pl);list.forEach(function(d,k){var s=els[k].style;s.left=d.x*55+'px';s.top=(d.y+HSD)*55+'px';s.width=d.w*55+'px';els[k].firstChild.style.height=d.h*55+'px'});return {h:h,pl:pl,els:els,list:list}}
 ['cardsW','cardsD'].forEach(function(n){var e=document.getElementById(n);if(e)e.remove()});
 var PLN=[{k:1,P:mkPlane(WORK,'cardsW','Work')},{k:3,P:mkPlane(DOOD,'cardsD','Doodles')},{k:2,P:mkPlane(PLAY,'cardsP','Play')},{k:4,P:mkBlocks(ABOUT,'cardsA')}];
@@ -958,7 +958,7 @@ function dims(){var mb=!NAVW_NOW;WK=mb?4.4:3.4;PK=2.2;DK=mb?2.4:2.6;AK=4;P0=WK+1
 function setH(){dims();document.getElementById('work').style.height=WK*vh()+'px';document.getElementById('about').style.height=AK*vh()+'px';document.getElementById('doodles').style.height=DK*vh()+'px';document.getElementById('play').style.height=PK*vh()+'px'}setH();addEventListener('resize',setH);
 function goTo(i){window.scrollTo({top:YS[i]*vh(),behavior:reduce?'auto':'smooth'})}
 NAVA.forEach(function(a,i){a.addEventListener('click',function(e){e.preventDefault();if(window.__rvClose)window.__rvClose();goTo(i)})});
-function onScroll(){var MB=!NAVW_NOW;if(MB!==LMB){LMB=MB;setH()}PANN=Math.max(6,(MB?88.4:41)-(VH-(MB?150:116))/cpW());PANN3=MB?31.4:26.3;PANN4=MB?20.1:2.2;var q=Math.max(0,window.scrollY/vh()),E=D0+DK;PAN=0;PAN2=0;PAN3=0;PAN4=0;
+function onScroll(){var MB=!NAVW_NOW;if(MB!==LMB){LMB=MB;setH()}PANN=Math.max(6,(MB?87.75:39.4)-(VH-(MB?150:116))/cpW());PANN3=MB?30.75:24.7;PANN4=MB?19.45:.6;var q=Math.max(0,window.scrollY/vh()),E=D0+DK;PAN=0;PAN2=0;PAN3=0;PAN4=0;
   if(q<1){sT=q}else if(q<WK){sT=1;PAN=(q-1)/(WK-1)}
   else{PAN=1;if(q<P0){sT=1+q-WK}else if(q<D0-1){sT=2;PAN4=(q-P0)/(PK-1)}else if(q<D0){sT=2+q-(D0-1);PAN4=1}else if(q<E-1){sT=3;PAN4=1;PAN3=(q-D0)/(DK-1)}else{sT=Math.min(4,3+q-(E-1));PAN4=1;PAN3=1;PAN2=Math.max(0,Math.min(1,(q-E)/(AK-1)))}}}
 addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll);onScroll();
