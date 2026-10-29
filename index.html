@@ -267,7 +267,7 @@ var ren=new T.WebGLRenderer({canvas:cv,antialias:true});
 ren.setClearColor(0xf5f5f5,1);
 var scene=new T.Scene();
 var cam=new T.OrthographicCamera(-10,10,6,-6,.1,200);
-var EL=.5,AZ=Math.PI/4,TARGET=new T.Vector3(0,.55,0);
+var EL=.5,EL2=.384,AZ=Math.PI/4,TARGET=new T.Vector3(0,.55,0);
 cam.position.set(Math.cos(EL)*Math.cos(AZ)*40,TARGET.y+Math.sin(EL)*40,Math.cos(EL)*Math.sin(AZ)*40);
 cam.lookAt(TARGET);cam.updateMatrixWorld();
 var amb=new T.AmbientLight(0xffffff,.5);scene.add(amb);var OC={value:new T.Vector3(.196,.251,.31)},DM={value:new T.Vector3(1,1,1)},NW={value:0};
@@ -868,9 +868,9 @@ function wkLeft(){return NAVW_NOW?frameC()-10*cpW():20}
 function dcp(){return NAVW_NOW?55*Math.max(.7,Math.min(1,Math.min((VW-NAVW_NOW)/1200,VH/900))):Math.min(50,(VW-24)/(13*.71))}
 function kf(i){
   if(i===1)return {az:PI2,el:1.5699,z:(NAVW_NOW?78:46)/(4.1*PPUB),fx:1,fy:1,rw:4.1,rh:4.1,cp:cpW()};
-  if(i===3)return {az:AZ,el:EL,z:ZS,fx:-1,fy:1,rw:5.7,rh:3.3,cp:dcp()*(NAVW_NOW?50/55:1)};
-  if(i===2)return {az:AZ,el:EL,z:ZS,fx:1,fy:1,rw:5.7,rh:3.3,cp:NAVW_NOW?dcp()*.8:dcp()};
-  if(i===4)return {az:AZ+Math.PI,el:EL,z:ZS*Math.max(.75,Math.min(1,VH/860)),fx:1,fy:1,rw:5.7,rh:3.3,cp:66*Math.max(.7,Math.min(1.1,Math.min((VW-NAVW_NOW)/1200,VH/900)))};
+  if(i===3)return {az:AZ,el:EL2,z:ZS,fx:-1,fy:1,rw:5.7,rh:3.1,cp:dcp()*(NAVW_NOW?50/55:1)};
+  if(i===2)return {az:AZ,el:EL2,z:ZS,fx:1,fy:1,rw:5.7,rh:3.1,cp:NAVW_NOW?dcp()*.8:dcp()};
+  if(i===4)return {az:AZ+Math.PI,el:EL2,z:ZS*Math.max(.75,Math.min(1,VH/860)),fx:1,fy:1,rw:5.7,rh:3.1,cp:66*Math.max(.7,Math.min(1.1,Math.min((VW-NAVW_NOW)/1200,VH/900)))};
   return {az:AZ,el:EL,z:1,fx:0,fy:0,rw:5.7,rh:3.3,cp:55}}
 var sT=0,sC=0,LASTI=-1,ROOMR={x:0,y:0,w:0,h:0};
 /* grid offset weight per view: eases in and out so the grid never jumps between views */
