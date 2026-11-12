@@ -33,6 +33,11 @@ module.exports = async (req, res) => {
   const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'x';
   const mail = 'Gomma is taking a quick break. Email Kalyan directly at kalyansudhakar25@gmail.com.';
   if (!key) return res.status(200).json(Object.assign({ reply: mail, fallback: true }, dbg ? { why: 'GEMINI_API_KEY is not set in this deployment' } : {}));
+  if (dbg && body.models === true) { // diagnostics: model ids only, never the key
+    try { const m = await (await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers: { 'x-goog-api-key': key } })).json();
+      return res.status(200).json({ models: (m.models || []).filter(x => (x.supportedGenerationMethods || []).includes('generateContent')).map(x => x.name.replace('models/', '')), err: m.error && m.error.message }); }
+    catch (e) { return res.status(200).json({ err: String(e && e.message) }); }
+  }
   if (limited(ip)) return res.status(200).json({ reply: 'That is plenty of questions for one hour. For more, email Kalyan at kalyansudhakar25@gmail.com.', fallback: true });
 
   const hist = (Array.isArray(body.history) ? body.history : []).slice(-6).map(m => ({
