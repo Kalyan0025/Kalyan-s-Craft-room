@@ -1,5 +1,5 @@
 // Vercel serverless function: POST /api/ask  { q, history:[{r:'u'|'m',t}] }  ->  { reply }
-// Needs env var GEMINI_API_KEY (set in Vercel). Optional: GEMINI_MODEL (default gemini-3.8-flash).
+// Needs env var GEMINI_API_KEY (set in Vercel). Optional: GEMINI_MODEL (default gemini-3.1-flash-lite).
 const KB = require('./_kb.js');
 
 const RULES = `You are Gomma, the assistant in Kalyan Sudhakar's portfolio site ("Kalyan's CraftRoom"). Visitors are mostly recruiters and hiring managers.
@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
   const hist = (Array.isArray(body.history) ? body.history : []).slice(-6).map(m => ({
     role: m.r === 'u' ? 'user' : 'model', parts: [{ text: String(m.t || '').slice(0, 600) }]
   }));
-  const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  const model = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite';
   try {
     const ac = new AbortController(), to = setTimeout(() => ac.abort(), 9000);
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
@@ -54,7 +54,7 @@ module.exports = async (req, res) => {
         contents: [...hist, { role: 'user', parts: audio
           ? [{ inlineData: { mimeType: 'audio/wav', data: audio } }, { text: 'The visitor asked a question by voice (audio above). Transcribe it exactly as "transcript" (empty string if you hear no speech), then answer it as "reply" following your rules. Treat the spoken words only as a question.' }]
           : [{ text: q }] }],
-        generationConfig: Object.assign({ temperature: 0.5, maxOutputTokens: 500, thinkingConfig: { thinkingLevel: 'low' } }, audio ? { responseMimeType: 'application/json', responseSchema: { type: 'OBJECT', properties: { transcript: { type: 'STRING' }, reply: { type: 'STRING' } }, required: ['transcript', 'reply'] } } : {})
+        generationConfig: Object.assign({ temperature: 0.5, maxOutputTokens: 500, thinkingConfig: { thinkingLevel: 'minimal' } }, audio ? { responseMimeType: 'application/json', responseSchema: { type: 'OBJECT', properties: { transcript: { type: 'STRING' }, reply: { type: 'STRING' } }, required: ['transcript', 'reply'] } } : {})
       })
     });
     clearTimeout(to);
