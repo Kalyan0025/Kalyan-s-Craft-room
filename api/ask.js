@@ -1,5 +1,5 @@
 // Vercel serverless function: POST /api/ask  { q, history:[{r:'u'|'m',t}] }  ->  { reply }
-// Needs env var GEMINI_API_KEY (set in Vercel). Optional: GEMINI_MODEL (default gemini-2.5-flash).
+// Needs env var GEMINI_API_KEY (set in Vercel). Optional: GEMINI_MODEL (default gemini-3.8-flash).
 const KB = require('./_kb.js');
 
 const RULES = `You are Gomma, the assistant in Kalyan Sudhakar's portfolio site ("Kalyan's CraftRoom"). Visitors are mostly recruiters and hiring managers.
@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
   const hist = (Array.isArray(body.history) ? body.history : []).slice(-6).map(m => ({
     role: m.r === 'u' ? 'user' : 'model', parts: [{ text: String(m.t || '').slice(0, 600) }]
   }));
-  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
   try {
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: 'POST',
