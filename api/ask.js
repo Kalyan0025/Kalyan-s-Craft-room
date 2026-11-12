@@ -27,11 +27,12 @@ module.exports = async (req, res) => {
   const key = process.env.GEMINI_API_KEY;
   const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
   const q = String(body.q || '').slice(0, 500).trim();
+  const dbg = body.debug === true; // diagnostics only when asked; never exposes the key
   const audio = typeof body.audio === 'string' && body.audio.length < 2.5e6 ? body.audio : '';
   if (!q && !audio) return res.status(400).json({ reply: '' });
   const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'x';
   const mail = 'Gomma is taking a quick break. Email Kalyan directly at kalyansudhakar25@gmail.com.';
-  if (!key) return res.status(200).json({ reply: mail, fallback: true });
+  if (!key) return res.status(200).json(Object.assign({ reply: mail, fallback: true }, dbg ? { why: 'GEMINI_API_KEY is not set in this deployment' } : {}));
   if (limited(ip)) return res.status(200).json({ reply: 'That is plenty of questions for one hour. For more, email Kalyan at kalyansudhakar25@gmail.com.', fallback: true });
 
   const hist = (Array.isArray(body.history) ? body.history : []).slice(-6).map(m => ({
@@ -50,7 +51,11 @@ module.exports = async (req, res) => {
         generationConfig: Object.assign({ temperature: 0.5, maxOutputTokens: 500, thinkingConfig: { thinkingBudget: 0 } }, audio ? { responseMimeType: 'application/json', responseSchema: { type: 'OBJECT', properties: { transcript: { type: 'STRING' }, reply: { type: 'STRING' } }, required: ['transcript', 'reply'] } } : {})
       })
     });
-    if (!r.ok) return res.status(200).json({ reply: mail, fallback: true });
+    if (!r.ok) {
+      let why = '';
+      if (dbg) { try { const e = (await r.json()).error || {}; why = r.status + ' ' + (e.status || '') + ': ' + String(e.message || '').slice(0, 200); } catch (x) { why = String(r.status); } }
+      return res.status(200).json(Object.assign({ reply: mail, fallback: true }, dbg ? { why } : {}));
+    }
     const j = await r.json();
     const t = (((j.candidates || [])[0] || {}).content || {}).parts;
     let reply = (t || []).map(p => p.text || '').join('').trim(), transcript = '';
@@ -60,6 +65,6 @@ module.exports = async (req, res) => {
     }
     return res.status(200).json({ reply: reply || mail, transcript, fallback: !reply });
   } catch (e) {
-    return res.status(200).json({ reply: mail, fallback: true });
+    return res.status(200).json(Object.assign({ reply: mail, fallback: true }, dbg ? { why: 'exception: ' + String(e && e.message).slice(0, 160) } : {}));
   }
 };
